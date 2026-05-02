@@ -252,7 +252,7 @@ open enuff-is-enuff-report/report.html  # macOS
 
 ## Requirements
 
-Only Claude Code. The scanner is Node.js stdlib-only — no `npm install`, no Python, no other runtime.
+Only Claude Code. The scanner uses Node.js standard library only — nothing extra to install.
 
 ## Why people would install it
 

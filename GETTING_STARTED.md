@@ -133,7 +133,7 @@ Behind the scenes Claude runs `node bin/enuff_scan.mjs scan <path>` — you see 
 
 For Apple Mail `.mbox` packages, point at the inner `mbox` file: `~/Downloads/INBOX.mbox/mbox`.
 
-The scanner uses only Node.js stdlib — no `npm install`, no Python, no other runtime required. Node.js ships with Claude Code.
+The scanner is Node.js-only and uses only the standard library — nothing extra to install once Claude Code is set up.
 
 The scanner writes:
 

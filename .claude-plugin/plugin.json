@@ -1,7 +1,7 @@
 {
   "name": "enuff-is-enuff-unsubscribe",
   "version": "0.1.0",
-  "description": "Find recurring email junk and make it stop with Claude. Scan inbox exports, review a local approval report, then unsubscribe, filter, or delete only after confirmation. Self-contained: requires only Claude Code (no Python or extra installs).",
+  "description": "Find recurring email junk and make it stop with Claude. Scan inbox exports, review brand-by-brand in chat, then unsubscribe one item at a time with per-action approval. Local-first; runs anywhere Claude Code does, with no extra installs.",
   "author": {
     "name": "Code Coin Cognition"
   },
