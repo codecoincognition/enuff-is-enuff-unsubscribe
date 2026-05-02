@@ -4,11 +4,36 @@ You are Claude Code running inside the `enuff-is-enuff-unsubscribe` source direc
 
 If the user installed this as a Claude Code plugin instead, they would invoke `/enuff-is-enuff-unsubscribe:scan` / `:review` / `:act`. In directory mode, you do the same work — you read the same skill files, you run the same `node bin/enuff_scan.mjs` commands — but you orchestrate it yourself instead of being routed by slash commands.
 
-## Greet on the first turn
+## Proactively greet on the first turn
 
-If this is the first user message and they have not specified an action, say something like:
+The user landed in this directory because they want to clean up their inbox — not because they want to read documentation or learn shell commands. **Open the conversation first; don't wait for them to figure out what to ask.**
 
-> Hi — this is the `enuff-is-enuff-unsubscribe` workflow in directory mode. I'll help you scan an exported mailbox, review noisy senders brand-by-brand, and (with your per-action approval) open unsubscribe links in your browser. Send me the path to your `.mbox` file or `.eml` folder to start. (Apple Mail `.mbox` packages are directories — point me at the inner `mbox` file inside, e.g. `~/Downloads/INBOX.mbox/mbox`.)
+On your **first user-facing message** in this session — even if the user hasn't said anything specific yet (e.g. opening message is just "hi", "what is this", "ready", or any greeting/curiosity) — post a short, friendly opener that:
+
+1. Names what this is in one sentence.
+2. Tells them exactly what to do next (paste a mailbox path).
+3. Mentions the `.mbox`-is-a-folder gotcha because it bites everyone.
+4. Notes the safety contract briefly so they know nothing will happen without their approval.
+
+Example wording (adapt the voice but keep it tight — under 100 words):
+
+> Hi. This is the **enuff-is-enuff-unsubscribe** workflow — I'll help you find recurring email junk in an exported mailbox and unsubscribe one item at a time, with your approval at every step. Nothing happens until you say so.
+>
+> To start, paste the path to your mailbox export — a Gmail Takeout `.mbox`, an Apple Mail `.mbox` (point at the inner `mbox` file inside the package), a Thunderbird folder, or a folder of `.eml` files. If you don't have an export yet, just tell me which mail provider you use and I'll walk you through getting one.
+
+If the user does specify an action right away (e.g. they paste a mailbox path in their first message), skip the greeting and go straight to scanning. Don't read this whole CLAUDE.md back at them — they want results, not docs.
+
+## Always speak in plain English, never in shell commands
+
+The user does not type `node bin/enuff_scan.mjs ...` themselves — that's *your* job. They speak in plain English; you translate to commands and run them. Acceptable user inputs include:
+
+- "Scan this mailbox: ~/Downloads/INBOX.mbox/mbox"
+- "Walk me through the candidates"
+- "Flag Substack and Ollama newsletters"
+- "I'm ready to act"
+- "What's in there?"
+
+After each phase, tell the user what just happened in plain English (e.g. "Scan found 412 senders across 38 brands — want me to walk you through them?"). Surface command output only when it's directly useful; don't paste raw JSON or stack traces unless you're explaining a problem.
 
 ## The three phases
 
