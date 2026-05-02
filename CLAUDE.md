@@ -70,18 +70,22 @@ Source of truth: `commands/act.md` and `skills/safe-action/SKILL.md`. Follow the
 Hard gate before doing anything:
 > "Have you reviewed the report? Are you okay with everything?"
 
-Then for **every** approved item, one at a time:
-1. Show the URL or draft email and explain what will happen.
-2. Classify the URL as **one-click / token** (provider unsubscribes on GET — Substack, Mailchimp, Beehiiv, ConvertKit, Buttondown, SendGrid, etc.) vs **multi-step / account-scoped** (login or confirm-button required).
-3. Ask for explicit per-item approval. A blanket "yes proceed" earlier is **not** authorization for individual items.
-4. **Take the action — don't just open the page:**
-   - **One-click / token URLs:** call Node `fetch(url, { method: 'GET', redirect: 'follow' })`. Check status 2xx and body for markers like `unsubscribed`, `disabled`, `removed`, `cancelled`, `you have been`, `no longer`, `success`. Report verified completion to the user. If markers are missing or status is non-2xx, fall back to `open <url>` and ask the user to verify.
-   - **Multi-step URLs:** `open <url>` so the user can complete in their browser, then ask them to confirm completion.
-   - **Mailto URLs:** draft the email, show it, ask before opening their mail client.
-5. Append the action to `enuff-is-enuff-report/action-log.md` with timestamp, item id, URL, user response, method used (`fetch`/`open`/`mailto`), response details, and conclusion (`completed` / `started in browser — user to confirm` / `failed` / `refused`).
-6. **End-of-act summary (mandatory).** After every approved item is processed, post a recap to the user: counts (total / completed / started-in-browser / failed / refused), a per-item table with ✓ / ⚠ / ✗ icons, any items needing user follow-up, a pointer to `enuff-is-enuff-report/action-log.md`, and a "what happens next" line. Always close the act phase with this summary — do not let the user guess what got done.
+Before processing the queue, show the user a one-screen summary of what's about to happen: the count of approved items + a one-line per-item summary (company · stream · method). This is their final visual pass; if anything looks wrong they can say no and go re-edit `approved-actions.json`.
 
-Never enter credentials, delete/archive messages, create filters, or submit confirmation forms without explicit per-action approval. Never leave an item at "I opened the page, you go check" for a one-click URL — that is incomplete work.
+After the global yes, **process the entire queue without asking per item.** The user already chose what to flag during the review phase — re-asking for every URL is redundant friction. Announce each completion in plain English as you go.
+
+For each approved item:
+1. Classify the URL as **one-click / token** (Substack, Mailchimp, Beehiiv, ConvertKit, Buttondown, SendGrid, etc. — provider unsubscribes on GET) vs **multi-step / account-scoped** (login or confirm-button required) vs **mailto**.
+2. **Take the action:**
+   - **One-click / token URLs:** call Node `fetch(url, { method: 'GET', redirect: 'follow' })`. Check status 2xx and body for markers like `unsubscribed`, `disabled`, `removed`, `cancelled`, `you have been`, `no longer`, `success`. Report verified completion. If markers are missing or status is non-2xx, fall back to `open <url>` and note as needing user verification in the final summary.
+   - **Multi-step URLs:** `open <url>` and note as needing user verification in the final summary; do not block the queue waiting for the user.
+   - **Mailto URLs:** draft the email, run `open "mailto:…"` so it opens pre-filled in their mail client, note as needing user send-confirmation in the final summary.
+3. Announce the result inline as you go — short, plain English (e.g. *"✓ Substack/marketing_promos — unsubscribed via token URL (200 OK, success markers found)"*).
+4. Append the action to `enuff-is-enuff-report/action-log.md` with timestamp, item id, URL, method used (`fetch`/`open`/`mailto`), response details, and conclusion (`completed` / `started in browser — user to verify` / `mailto opened — user to send` / `failed`).
+
+5. **End-of-act summary (mandatory).** After every approved item is processed, post a recap to the user: counts (total / completed / needs-verify / mailto-pending / failed), a per-item table with ✓ / ⚠ / ✗ icons, any items needing user follow-up, a pointer to `enuff-is-enuff-report/action-log.md`, and a "what happens next" line.
+
+Never enter credentials, delete/archive messages, create filters, or actively send mail on the user's behalf — the global "yes" authorizes opening unsubscribe URLs and drafting mailto messages, not destructive or credentialed operations.
 
 ## Path conventions in directory mode
 

@@ -747,27 +747,22 @@ claude</code></pre>
     <h2>Act — per-action approval, one at a time</h2>
   </div>
 
-  <p>Tell Claude you're ready to act. Before doing anything, Claude asks the global gate:</p>
+  <p>Tell Claude you're ready. First, Claude shows you the queue — a one-line summary of every approved item — and asks the single global gate:</p>
 
   <blockquote class="prompt">Have you reviewed the report? Are you okay with everything?</blockquote>
 
-  <p>After you confirm, Claude processes <strong>every</strong> approved item one at a time:</p>
+  <p>One "yes" authorizes the whole queue. You curated it brand-by-brand in step 4; Claude won't ask again per URL — that would just be friction. After your yes, Claude works through the queue and announces each completion as it goes:</p>
 
   <ul>
-    <li>Shows the URL and classifies it as <strong>one-click / token</strong> (Substack, Mailchimp, Beehiiv, ConvertKit, etc. that unsubscribe on a single GET) or <strong>multi-step</strong> (login or confirm-button required).</li>
-    <li>Takes the action — does not just open the page:
-      <ul>
-        <li><strong>One-click URLs:</strong> Claude calls <code>fetch()</code> programmatically, checks the response for success markers, and reports verified completion.</li>
-        <li><strong>Multi-step URLs:</strong> Claude opens in your browser and asks you to confirm completion.</li>
-        <li><strong>Mailto:</strong> Claude drafts the email, asks before opening your mail client.</li>
-      </ul>
-    </li>
-    <li>Logs everything to <code>action-log.md</code>.</li>
+    <li><strong>One-click / token URLs</strong> (Substack, Mailchimp, Beehiiv, ConvertKit, etc. that unsubscribe on a single GET): Claude calls <code>fetch()</code> programmatically, checks the response for success markers, and reports verified completion.</li>
+    <li><strong>Multi-step URLs</strong> (login or confirm-button required): Claude opens the page in your browser and notes the item as <em>needs your verification</em> in the final summary — Claude doesn't block the queue waiting for you.</li>
+    <li><strong>Mailto unsubscribes:</strong> Claude drafts the email and opens it in your mail client; you press send.</li>
+    <li>Every action lands in <code>action-log.md</code>.</li>
   </ul>
 
-  <p>When the queue is drained, Claude posts an <strong>end-of-act summary</strong> with counts (completed / started-in-browser / failed / refused), a per-item table with ✓ / ⚠ / ✗ icons, and any items still needing your attention.</p>
+  <p>When the queue is drained, Claude posts an <strong>end-of-act summary</strong> with counts (completed / needs-verify / mailto-pending / failed), a per-item table with ✓ / ⚠ / ✗ icons, and a pointer to anything still needing your attention.</p>
 
-  <div class="warning"><strong>Claude will never:</strong> enter credentials, delete or archive messages, create filters, or submit a final confirmation form on your behalf without explicit per-action approval.</div>
+  <div class="warning"><strong>The global "yes" authorizes opening unsubscribe URLs and drafting mailto messages — nothing else.</strong> Claude never enters credentials, deletes or archives messages, creates filters, or sends mail on your behalf.</div>
 </article>
 
 <!-- TROUBLESHOOTING -->

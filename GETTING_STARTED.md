@@ -221,19 +221,20 @@ In **plugin mode**, run `/enuff-is-enuff-unsubscribe:act`. In **directory mode**
 Have you reviewed the report? Are you okay with everything?
 ```
 
-After you confirm, Claude reads `enuff-is-enuff-report/approved-actions.json` and processes each `approved: true` row. **For every single item**, Claude:
+Before anything happens, Claude shows you the queue — a one-line summary of every approved item — and asks the global gate. **One "yes" then authorizes the entire queue.** Per-item decisions already happened during review (step 4); asking again per URL would just be friction.
 
-1. Shows you the URL or draft email and classifies it as **one-click / token** (provider unsubscribes on GET — Substack, Mailchimp, Beehiiv, ConvertKit, etc.) or **multi-step / account-scoped** (login or confirm-button required).
-2. Asks for explicit per-action approval — your "yes go" from earlier does **not** authorize subsequent items.
-3. Takes the action — does not just point at the page:
+For each approved item, Claude:
+
+1. Classifies the URL as **one-click / token** (Substack, Mailchimp, Beehiiv, ConvertKit, etc. — provider unsubscribes on GET) or **multi-step / account-scoped** (login or confirm-button required) or **mailto**.
+2. Takes the action and announces the result inline as it goes:
    - One-click URLs: Claude calls `fetch(url, { method: 'GET' })` programmatically, checks the response for success markers, and reports verified completion.
-   - Multi-step URLs: Claude opens the page in your browser and asks you to confirm completion.
-   - Mailto URLs: Claude drafts the email and asks before opening your mail client.
-4. Logs everything to `enuff-is-enuff-report/action-log.md`.
+   - Multi-step URLs: Claude opens the page in your browser and notes the item as *needs your verification* in the final summary — the queue keeps moving.
+   - Mailto URLs: Claude drafts the email and opens it pre-filled in your mail client; you press send.
+3. Logs everything to `enuff-is-enuff-report/action-log.md`.
 
-After every approved item is processed, Claude posts an **end-of-act summary**: counts (total / completed / started-in-browser / failed / refused), a per-item table with ✓ / ⚠ / ✗ icons, any items still needing your attention, and a pointer to the full action log. The act phase always closes with this recap — you never have to guess what got done.
+After the queue is drained, Claude posts an **end-of-act summary**: counts (total / completed / needs-verify / mailto-pending / failed), a per-item table with ✓ / ⚠ / ✗ icons, any items still needing your attention, and a pointer to the full action log. The act phase always closes with this recap — you never have to guess what got done.
 
-Claude never enters credentials, deletes/archives messages, creates filters, or submits a final confirmation form on your behalf without explicit per-action approval.
+The global "yes" authorizes opening unsubscribe URLs and drafting mailto messages — nothing else. Claude never enters credentials, deletes/archives messages, creates filters, or sends mail on your behalf.
 
 ## Privacy
 

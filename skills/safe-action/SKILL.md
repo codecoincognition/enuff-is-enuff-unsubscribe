@@ -41,16 +41,25 @@ When opening unsubscribe pages:
 5. Ask before every irreversible click — including the initial URL open when the URL itself is the confirmation.
 6. Log the result.
 
-## Per-Action Approval (mandatory)
+## Approval model: review-time, not act-time
 
-A blanket "yes, proceed" from the user is a green light to start the act phase, not a green light to take every action without checking. For each approved item:
+Approval lives in the **review** phase, where the user curated the queue brand-by-brand and explicitly chose which items to flag. The **act** phase has a single global gate ("Have you reviewed the report? Are you okay with everything?") and then processes the entire queue without further per-item asks.
 
-1. Show the URL or draft email.
-2. State what will happen on click/send.
-3. Get an explicit yes for THAT item.
-4. Only then execute.
+Why no per-item gate:
 
-This applies even when the approved list has only one item. The cost of one extra confirmation message is far less than the cost of an unintended unsubscribe (or worse, an unintended account deletion or filter creation).
+- The user already opted in per item during review — they don't need to opt in twice.
+- Asking again for every URL adds friction that punishes thorough reviewers and trains users to mash "yes" through the whole queue, defeating the protection.
+- Showing the queue once before processing (count + per-item summary line) gives the user a final visual pass; if anything looks wrong, they can say no and go re-edit `approved-actions.json`.
+
+What you must still do:
+
+1. **Show the queue** before starting. Format: count of approved items + a one-line per-item summary (company · stream · method).
+2. **Wait for the global yes.** No "yes" → no act phase.
+3. **Announce each completion in plain English** as you process — the user should be able to follow along (e.g. *"✓ Substack/marketing_promos — unsubscribed via token URL"*).
+4. **Log every action** to `action-log.md`.
+5. **Post the end-of-act summary** at the end (counts, per-item table with ✓ / ⚠ / ✗, items needing user follow-up).
+
+Items that intrinsically require the user to do something in their browser (multi-step pages, mailto drafts) are processed by `open`-ing them — they don't ask the user mid-queue, they get noted as "needs user follow-up" in the final summary.
 
 ## Take The Action — Don't Just Point At It
 
