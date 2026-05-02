@@ -755,7 +755,6 @@ claude</code></pre>
 
   <ul>
     <li>Shows the URL and classifies it as <strong>one-click / token</strong> (Substack, Mailchimp, Beehiiv, ConvertKit, etc. that unsubscribe on a single GET) or <strong>multi-step</strong> (login or confirm-button required).</li>
-    <li>Asks for explicit per-item approval. Your earlier "yes" does <em>not</em> authorize subsequent items.</li>
     <li>Takes the action — does not just open the page:
       <ul>
         <li><strong>One-click URLs:</strong> Claude calls <code>fetch()</code> programmatically, checks the response for success markers, and reports verified completion.</li>
