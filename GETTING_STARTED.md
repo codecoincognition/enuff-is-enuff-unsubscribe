@@ -116,19 +116,20 @@ Source: https://www.fastmail.help/hc/en-us/articles/360060590573-Download-all-yo
 
 ## Step 2: Run Scan
 
-**Plugin mode:**
+**Plugin mode** — run the slash command:
 
 ```text
 /enuff-is-enuff-unsubscribe:scan /path/to/mail.mbox
 /enuff-is-enuff-unsubscribe:scan /path/to/eml-folder
 ```
 
-**Directory mode** (run from inside the cloned repo, or just ask Claude — `CLAUDE.md` already knows the command):
+**Directory mode** — just tell Claude in plain English. You never type the node command yourself; `CLAUDE.md` tells Claude what to run.
 
-```bash
-node bin/enuff_scan.mjs scan /path/to/mail.mbox
-node bin/enuff_scan.mjs scan /path/to/eml-folder
-```
+> Scan this mailbox: ~/Downloads/INBOX.mbox/mbox
+
+> Scan the eml folder at ~/Downloads/proton-export
+
+Behind the scenes Claude runs `node bin/enuff_scan.mjs scan <path>` — you see the output, but you don't have to remember the command.
 
 For Apple Mail `.mbox` packages, point at the inner `mbox` file: `~/Downloads/INBOX.mbox/mbox`.
 

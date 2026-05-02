@@ -111,8 +111,8 @@ The workflow is the same in plugin mode and directory mode (see *Two ways to use
 
 You give the path to an exported mailbox (Gmail Takeout `.mbox`, Apple Mail `.mbox` package's inner `mbox` file, Thunderbird `.mbox`, or a folder of `.eml` files).
 
-| Plugin mode | `/enuff-is-enuff-unsubscribe:scan ~/Downloads/INBOX.mbox/mbox` |
-| Directory mode | `node bin/enuff_scan.mjs scan ~/Downloads/INBOX.mbox/mbox` (or just paste the path to Claude — `CLAUDE.md` knows the command) |
+| Plugin mode | Run the slash command: `/enuff-is-enuff-unsubscribe:scan ~/Downloads/INBOX.mbox/mbox` |
+| Directory mode | Just tell Claude: *"Scan this mailbox: ~/Downloads/INBOX.mbox/mbox"* — `CLAUDE.md` tells Claude to run `node bin/enuff_scan.mjs scan …` for you |
 
 The scanner reads only message headers (no body, no attachments) and writes:
 
@@ -128,8 +128,8 @@ enuff-is-enuff-report/
 
 ### 2. Review (in Claude chat — the approval surface)
 
-| Plugin mode | `/enuff-is-enuff-unsubscribe:review` |
-| Directory mode | "Walk me through the candidates" — `CLAUDE.md` routes to the same skill |
+| Plugin mode | Run `/enuff-is-enuff-unsubscribe:review` |
+| Directory mode | Just say *"walk me through the candidates"* — `CLAUDE.md` routes to the same skill |
 
 Claude reads `report-state.json`, presents brands grouped by stream (marketing_promos, newsletter, saas_lifecycle, etc.), and **asks you which to flag** brand-by-brand. You can pick at the stream level — e.g. flag `Substack:newsletter` while keeping `Substack:marketing_promos`. Selection grammar: `Brand:stream`, `Brand:s1+s2`, `all newsletters`, `all newsletters except X`, or `none`.
 
@@ -141,8 +141,8 @@ Your selections write directly into `approved-actions.json`. Claude then renders
 
 ### 3. Act (per-action approval, browser-driven execution)
 
-| Plugin mode | `/enuff-is-enuff-unsubscribe:act` |
-| Directory mode | "I'm ready to act" — `CLAUDE.md` routes to the `safe-action` skill |
+| Plugin mode | Run `/enuff-is-enuff-unsubscribe:act` |
+| Directory mode | Just say *"I'm ready to act"* — `CLAUDE.md` routes to the `safe-action` skill |
 
 Claude first asks the global gate:
 

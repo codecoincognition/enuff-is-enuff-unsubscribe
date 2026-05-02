@@ -480,11 +480,14 @@
 
   <div id="mode-dir" class="tab-content active">
     <p><strong>Best for:</strong> trying it before installing, dev containers, ephemeral sandboxes.</p>
-    <p>Clone the repo and start a Claude Code session inside it. The repo's <code>CLAUDE.md</code> auto-loads and walks you through.</p>
+    <p>Clone the repo and start a Claude Code session inside it. The repo's <code>CLAUDE.md</code> auto-loads and walks you through everything.</p>
     <pre><code>git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
 cd enuff-is-enuff-unsubscribe
 claude</code></pre>
-    <p>Then just say "I want to clean up my inbox" or paste a mailbox path. No slash commands needed.</p>
+    <p>From here you don't run any commands yourself — you just talk to Claude in plain English. Things like:</p>
+    <blockquote class="prompt">I want to clean up my inbox.</blockquote>
+    <blockquote class="prompt">Scan this mailbox: ~/Downloads/INBOX.mbox/mbox</blockquote>
+    <p>Claude reads <code>CLAUDE.md</code> and runs the right node command under the hood. You see the output; you don't type the command.</p>
   </div>
 
   <div id="mode-plugin" class="tab-content">
@@ -599,11 +602,13 @@ claude</code></pre>
   </div>
 
   <div id="scan-dir" class="tab-content active">
-    <pre><code>node bin/enuff_scan.mjs scan ~/Downloads/INBOX.mbox/mbox</code></pre>
-    <p>Or just say "scan this mailbox" and paste the path — <code>CLAUDE.md</code> already knows the command.</p>
+    <p>Just tell Claude:</p>
+    <blockquote class="prompt">Scan this mailbox: ~/Downloads/INBOX.mbox/mbox</blockquote>
+    <p>Claude follows <code>CLAUDE.md</code> and runs <code>node bin/enuff_scan.mjs scan …</code> for you. You don't need to type or remember any commands.</p>
   </div>
 
   <div id="scan-plugin" class="tab-content">
+    <p>Run the slash command:</p>
     <pre><code>/enuff-is-enuff-unsubscribe:scan ~/Downloads/INBOX.mbox/mbox</code></pre>
   </div>
 
