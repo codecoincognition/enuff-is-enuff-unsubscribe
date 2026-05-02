@@ -1,0 +1,8 @@
+From: Nike Orders <orders@nike.example>
+To: user@example.com
+Subject: Your order has shipped
+Date: Thu, 30 Apr 2026 12:00:00 -0400
+X-Gmail-Labels: Category Updates
+
+Your order is on the way.
+

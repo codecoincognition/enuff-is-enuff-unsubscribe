@@ -1,0 +1,13 @@
+{
+  "name": "enuff-is-enuff-local",
+  "owner": {
+    "name": "Code Coin Cognition"
+  },
+  "plugins": [
+    {
+      "name": "enuff-is-enuff-unsubscribe",
+      "source": "./",
+      "description": "Find recurring email junk and make it stop with Claude. Scan inbox exports, review a local approval report, then unsubscribe, filter, or delete only after confirmation."
+    }
+  ]
+}

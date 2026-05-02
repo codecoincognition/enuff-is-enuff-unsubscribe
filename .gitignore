@@ -1,0 +1,29 @@
+# Local scan output — contains user mailbox data and (consumed) unsubscribe token URLs.
+# Never commit this; each user generates their own.
+enuff-is-enuff-report/
+
+# Local backups of the public tutorial page (keep on disk, off the repo)
+*.cancel-no-code-style.html
+*.bak
+*.orig
+
+# macOS
+.DS_Store
+
+# Node (in case anyone npm-installs locally for testing)
+node_modules/
+npm-debug.log*
+
+# Python (pre-port leftovers)
+__pycache__/
+*.pyc
+*.pyo
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Env / secrets
+.env
+.env.*

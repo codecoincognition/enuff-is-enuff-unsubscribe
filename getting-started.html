@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enuff Is Enuff Unsubscribe — Getting Started</title>
+
+  <meta name="description" content="A blunt, local-first inbox cleanup workflow for Claude Code. Scan an exported mailbox, review noisy senders brand-by-brand, unsubscribe with per-action approval. No coding required.">
+  <meta name="author" content="Code Coin Cognition">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://github.com/codecoincognition/enuff-is-enuff-unsubscribe">
+  <meta property="og:title" content="Enuff Is Enuff Unsubscribe — Find recurring junk and make it stop">
+  <meta property="og:description" content="Hand Claude an exported mailbox. Claude finds recurring senders, walks you through them brand-by-brand, and unsubscribes with your per-action approval. Local-first, no credentials, no Python.">
+
+  <style>
+    :root {
+      --bg: #faf9f6;        /* warm off-white, document paper */
+      --bg-soft: #f3f1ec;   /* one step deeper for code/details */
+      --text: #1a1a17;
+      --muted: #6b6a64;
+      --border: #e3e0d8;
+      --accent: #0f766e;     /* stamp-ink teal (Tailwind teal-700) */
+      --accent-soft: #99f6e4; /* teal-200 for subtle backgrounds */
+      --success: #166534;
+      --success-bg: #dcfce7;
+      --warning: #854d0e;
+      --warning-bg: #fef3c7;
+      --code-bg: #18201f;    /* near-black with a teal hint */
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0c0e0d;
+        --bg-soft: #161918;
+        --text: #e8e6df;
+        --muted: #9b9a93;
+        --border: #2c302e;
+        --accent: #2dd4bf;    /* teal-400 — readable on dark */
+        --accent-soft: #134e4a; /* teal-900 for subtle backgrounds */
+        --success: #22c55e;
+        --success-bg: #052e16;
+        --warning: #f97316;
+        --warning-bg: #431407;
+        --code-bg: #14181a;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 20px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 3rem);
+      letter-spacing: -0.025em;
+      line-height: 1.05;
+      font-weight: 800;
+      margin: 0 0 0.5rem;
+    }
+    h2 {
+      font-size: 1.3rem;
+      margin: 0;
+      padding: 0;
+      border: none;
+      color: var(--text);
+    }
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.5rem;
+      color: var(--text);
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 2.5rem 0 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+    .tagline {
+      color: var(--text);
+      margin: 0.5rem auto 0.75rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      max-width: 36ch;
+      line-height: 1.35;
+    }
+    .meta-line {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0;
+      letter-spacing: 0.04em;
+    }
+    .meta-line .dot { color: var(--accent); margin: 0 0.4em; }
+    .header-connector {
+      width: 2px;
+      height: 40px;
+      border-left: 2px dashed var(--accent);
+      margin: 1.5rem auto 0;
+      position: relative;
+    }
+    .header-connector::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: -6px;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 8px solid var(--accent);
+    }
+
+    /* Progress */
+    .progress {
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      padding: 0.75rem 0;
+      border-bottom: 2px dashed var(--accent);
+      margin: 0 -20px 1.5rem;
+      padding-left: 20px;
+      padding-right: 20px;
+      z-index: 100;
+    }
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+      position: relative;
+      cursor: pointer;
+    }
+    .progress-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: var(--border);
+      pointer-events: none;
+    }
+    .progress-step.completed:not(:last-child)::after {
+      background: var(--accent);
+    }
+    .progress-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      position: relative;
+      z-index: 1;
+    }
+    .progress-step:hover .progress-dot {
+      background: var(--accent);
+      color: white;
+    }
+    .progress-step.active .progress-dot {
+      background: var(--accent);
+      color: white;
+    }
+    .progress-step.completed .progress-dot {
+      background: var(--bg);
+      border: 2px dashed var(--accent);
+      color: var(--accent);
+    }
+    .progress-label {
+      font-size: 9px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .progress-step.active .progress-label { color: var(--accent); font-weight: 600; }
+    .progress-step.completed .progress-label { color: var(--accent); }
+
+    /* Steps */
+    .step {
+      position: relative;
+      margin: 0 0 2.5rem;
+      padding-left: 48px;
+      scroll-margin-top: 80px;
+    }
+    .step::before {
+      content: '';
+      position: absolute;
+      left: 17px;
+      top: 40px;
+      bottom: -2.5rem;
+      width: 2px;
+      background: var(--border);
+    }
+    .step:last-of-type::before { display: none; }
+    .step-num {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .step-header {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    /* step-time badges removed — they read as infomercial-y */
+
+    /* Code */
+    pre {
+      background: var(--code-bg);
+      color: #d4d4d4;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      margin: 0.5rem 0;
+      position: relative;
+    }
+    code {
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      background: var(--bg-soft);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+    /* Quoted dialog (Claude prompts) — NOT a copyable command */
+    blockquote.prompt {
+      margin: 0.75rem 0;
+      padding: 0.75rem 1rem 0.75rem 1.25rem;
+      background: var(--bg-soft);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 4px 4px 0;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+    blockquote.prompt::before {
+      content: "Claude asks:";
+      display: block;
+      font-style: normal;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    pre code { background: none; padding: 0; }
+    pre .copy-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      padding: 3px 10px;
+      font-size: 11px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 3px;
+      color: #999;
+      cursor: pointer;
+    }
+    pre .copy-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    pre.copied .copy-btn { background: var(--success); color: white; border-color: var(--success); }
+
+    /* Callouts */
+    .tip {
+      background: var(--success-bg);
+      border-left: 3px solid var(--success);
+      padding: 0.6rem 0.75rem;
+      margin: 0.75rem 0;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.9rem;
+    }
+    .tip strong { color: var(--success); }
+    .warning {
+      background: var(--warning-bg);
+      border-left: 3px solid var(--warning);
+      padding: 0.6rem 0.75rem;
+      margin: 0.75rem 0;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.9rem;
+    }
+    .warning strong { color: var(--warning); }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin: 0.75rem 0 0;
+    }
+    .tab {
+      padding: 0.4rem 0.75rem;
+      background: var(--border);
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+    .tab:first-child { border-radius: 4px 0 0 0; }
+    .tab:last-child { border-radius: 0 4px 0 0; }
+    .tab.active { background: var(--accent); color: white; }
+    .tab-content {
+      display: none;
+      background: var(--border);
+      padding: 1rem;
+      border-radius: 0 4px 4px 4px;
+      font-size: 0.9rem;
+    }
+    .tab-content.active { display: block; }
+    .tab-content ol, .tab-content ul { margin: 0; padding-left: 1.25rem; }
+    .tab-content li { margin: 0.5rem 0; }
+    .tab-content pre { margin: 0.5rem 0; }
+    .tab-content > p:first-child { margin-top: 0; }
+    .tab-content > p:last-child { margin-bottom: 0; }
+
+    /* Lists */
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0;
+    }
+    .checklist li {
+      padding: 0.35rem 0 0.35rem 1.5rem;
+      position: relative;
+    }
+    .checklist li::before {
+      content: '○';
+      position: absolute;
+      left: 0;
+      color: var(--muted);
+    }
+    ol, ul { margin: 0.5rem 0; padding-left: 1.25rem; }
+    li { margin: 0.4rem 0; }
+
+    /* Expandable */
+    details {
+      margin: 0.5rem 0;
+      background: var(--border);
+      border-radius: 4px;
+    }
+    summary {
+      cursor: pointer;
+      padding: 0.6rem 0.75rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    details[open] summary { border-bottom: 1px solid var(--bg); }
+    details > div { padding: 0.75rem; font-size: 0.9rem; }
+
+    /* Terminal Mock */
+    .terminal {
+      background: #252525;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 0.75rem 0;
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 12px;
+    }
+    .terminal-bar {
+      background: #3c3c3c;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .terminal-btn { width: 10px; height: 10px; border-radius: 50%; }
+    .terminal-btn.close { background: #ff5f56; }
+    .terminal-btn.min { background: #ffbd2e; }
+    .terminal-btn.max { background: #27ca40; }
+    .terminal-title { flex: 1; text-align: center; color: #999; font-size: 11px; font-family: system-ui; }
+    .terminal-body { padding: 12px; color: #d4d4d4; line-height: 1.5; }
+    .t-prompt { color: #6cb6ff; }
+    .t-path { color: #7ee787; }
+    .t-dim { color: #8b949e; }
+    .t-green { color: #7ee787; }
+    .t-orange { color: #f0883e; }
+    .t-red { color: #ff7b72; }
+
+    /* Sections */
+    section { margin-top: 2.5rem; }
+    section > h2 { border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem; }
+
+    /* Footer */
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--accent); }
+
+    a { color: var(--accent); }
+
+    /* Responsive */
+    @media (max-width: 500px) {
+      body { padding: 12px; }
+      .step { padding-left: 40px; scroll-margin-top: 60px; }
+      .step-num { width: 30px; height: 30px; font-size: 0.9rem; }
+      .step::before { left: 14px; }
+      h1 { font-size: 1.5rem; }
+      h2 { font-size: 1.15rem; }
+      .progress-label { display: none; }
+      .progress-dot { width: 20px; height: 20px; font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="progress">
+  <div class="progress-steps">
+    <div class="progress-step active" data-step="1" onclick="scrollToStep(1)">
+      <div class="progress-dot">1</div>
+      <div class="progress-label">Choose</div>
+    </div>
+    <div class="progress-step" data-step="2" onclick="scrollToStep(2)">
+      <div class="progress-dot">2</div>
+      <div class="progress-label">Export</div>
+    </div>
+    <div class="progress-step" data-step="3" onclick="scrollToStep(3)">
+      <div class="progress-dot">3</div>
+      <div class="progress-label">Scan</div>
+    </div>
+    <div class="progress-step" data-step="4" onclick="scrollToStep(4)">
+      <div class="progress-dot">4</div>
+      <div class="progress-label">Review</div>
+    </div>
+    <div class="progress-step" data-step="5" onclick="scrollToStep(5)">
+      <div class="progress-dot">5</div>
+      <div class="progress-label">Act</div>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <h1>Enuff is enuff.</h1>
+  <p class="tagline">Find every sender that won't shut up. Make them stop.</p>
+  <p class="meta-line">Local-first <span class="dot">·</span> No credentials <span class="dot">·</span> No Python</p>
+  <div class="header-connector"></div>
+</header>
+
+<!-- STEP 1: Pick a mode -->
+<article class="step" id="step-1" data-step="1">
+  <div class="step-num">1</div>
+  <div class="step-header">
+    <h2>Pick how to run it</h2>
+  </div>
+
+  <p>Two ways in. Both run the same scan → review → act flow with the same safety rules — only the entry point differs. Assumes you already have <a href="https://claude.com/claude-code">Claude Code</a> installed.</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('mode-dir')">A · Directory</button>
+    <button class="tab" onclick="showTab('mode-plugin')">B · Plugin</button>
+  </div>
+
+  <div id="mode-dir" class="tab-content active">
+    <p><strong>Best for:</strong> trying it before installing, dev containers, ephemeral sandboxes.</p>
+    <p>Clone the repo and start a Claude Code session inside it. The repo's <code>CLAUDE.md</code> auto-loads and walks you through.</p>
+    <pre><code>git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
+cd enuff-is-enuff-unsubscribe
+claude</code></pre>
+    <p>Then just say "I want to clean up my inbox" or paste a mailbox path. No slash commands needed.</p>
+  </div>
+
+  <div id="mode-plugin" class="tab-content">
+    <p><strong>Best for:</strong> always-on access from any project.</p>
+    <p>Install via the Claude Code plugin marketplace, or point a local marketplace at this repo. Once installed, slash commands work from anywhere:</p>
+    <pre><code>/enuff-is-enuff-unsubscribe:scan ~/Downloads/INBOX.mbox/mbox
+/enuff-is-enuff-unsubscribe:review
+/enuff-is-enuff-unsubscribe:act</code></pre>
+  </div>
+
+  <div class="tip"><strong>No Python, no npm install.</strong> The scanner is Node.js stdlib only — Node ships with Claude Code, so there is nothing else to install.</div>
+</article>
+
+<!-- STEP 2: Export Mail -->
+<article class="step" id="step-2" data-step="2">
+  <div class="step-num">2</div>
+  <div class="step-header">
+    <h2>Export Your Mail</h2>
+  </div>
+
+  <p>The scanner reads only an exported mailbox file (<code>.mbox</code>) or a folder of <code>.eml</code> files. Your live account is never touched.</p>
+
+  <details>
+    <summary>Gmail (recommended)</summary>
+    <div>
+      <ol>
+        <li>Go to <a href="https://takeout.google.com">Google Takeout</a></li>
+        <li>Click <strong>Deselect all</strong>, then check <strong>Mail</strong></li>
+        <li>Choose all mail or specific labels</li>
+        <li>Create the export and wait for the email link</li>
+        <li>Download and unzip — the <code>.mbox</code> file is inside</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary>Apple Mail (Mac)</summary>
+    <div>
+      <ol>
+        <li>Open <strong>Mail</strong></li>
+        <li>Select one or more mailboxes in the sidebar</li>
+        <li>Choose <strong>Mailbox &gt; Export Mailbox</strong></li>
+        <li>Pick a folder and click <strong>Choose</strong></li>
+      </ol>
+      <div class="warning"><strong>Apple Mail <code>.mbox</code> is a folder.</strong> Point the scanner at the inner <code>mbox</code> file inside, e.g. <code>~/Downloads/INBOX.mbox/mbox</code>.</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Thunderbird</summary>
+    <div>
+      <p>Use Thunderbird's profile mail folders or the <em>ImportExportTools NG</em> add-on. Each folder is a single <code>.mbox</code>-style file.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Proton Mail</summary>
+    <div>
+      <ol>
+        <li>Use the official <em>Proton Mail Export Tool</em></li>
+        <li>Run a backup export to your device</li>
+        <li>Point the scanner at the exported folder of <code>.eml</code> files</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary>Fastmail</summary>
+    <div>
+      <ol>
+        <li>Go to <strong>Settings &gt; Migration</strong></li>
+        <li>Open the <strong>Export</strong> tab</li>
+        <li>Create a new mail export for the folder/date range you want</li>
+        <li>Download the zip and point the scanner at the contents</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary>Outlook / Outlook.com</summary>
+    <div>
+      <p>Outlook exports <code>.pst</code> files, which this prototype does not parse directly yet. For now, import the mail into Apple Mail or Thunderbird, then export <code>.mbox</code>.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Yahoo, AOL, iCloud, and other IMAP mail</summary>
+    <div>
+      <ol>
+        <li>Add the account to Apple Mail or Thunderbird via IMAP</li>
+        <li>Wait for the folders you care about to sync locally</li>
+        <li>Export from that mail client as <code>.mbox</code></li>
+      </ol>
+    </div>
+  </details>
+
+  <div class="tip"><strong>Save the export somewhere easy to find.</strong> You'll hand the path to Claude in step 3.</div>
+</article>
+
+<!-- STEP 3: Scan -->
+<article class="step" id="step-3" data-step="3">
+  <div class="step-num">3</div>
+  <div class="step-header">
+    <h2>Scan</h2>
+  </div>
+
+  <p>Hand Claude the path to your export.</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('scan-dir')">Directory mode</button>
+    <button class="tab" onclick="showTab('scan-plugin')">Plugin mode</button>
+  </div>
+
+  <div id="scan-dir" class="tab-content active">
+    <pre><code>node bin/enuff_scan.mjs scan ~/Downloads/INBOX.mbox/mbox</code></pre>
+    <p>Or just say "scan this mailbox" and paste the path — <code>CLAUDE.md</code> already knows the command.</p>
+  </div>
+
+  <div id="scan-plugin" class="tab-content">
+    <pre><code>/enuff-is-enuff-unsubscribe:scan ~/Downloads/INBOX.mbox/mbox</code></pre>
+  </div>
+
+  <p>The scanner reads only message headers — no bodies, no attachments — and writes summary state to a local <code>enuff-is-enuff-report/</code> folder. Nothing is acted on, and the HTML report is not generated yet.</p>
+</article>
+
+<!-- STEP 4: Review -->
+<article class="step" id="step-4" data-step="4">
+  <div class="step-num">4</div>
+  <div class="step-header">
+    <h2>Review — in chat, brand by brand</h2>
+  </div>
+
+  <p><strong>Approval lives in the chat with Claude</strong>, not in the HTML. Claude reads the scan state, presents the brands grouped by stream, and asks which to flag — one company at a time.</p>
+
+  <p>You can pick at the stream level: flag <code>Substack:newsletter</code> while keeping <code>Substack:marketing_promos</code>. Locked streams (account/security, receipts, financial) are blocked from the prompt entirely.</p>
+
+  <h3>Selection grammar</h3>
+
+  <ul>
+    <li><code>Substack:newsletter, Ollama:newsletter</code> — explicit per-stream</li>
+    <li><code>Substack:newsletter+marketing_promos</code> — multiple streams from one brand</li>
+    <li><code>all newsletters except GitHub</code> — pattern with exclusion</li>
+    <li><code>none</code> — flag nothing, render the report as-is</li>
+  </ul>
+
+  <h3>Confirm in the browser</h3>
+
+  <p>Claude writes your selections to <code>approved-actions.json</code> and re-renders the HTML report so you can see your approved items highlighted in green.</p>
+
+  <pre><code>open enuff-is-enuff-report/report.html</code></pre>
+
+  <div class="tip"><strong>The HTML is read-only.</strong> There are no checkboxes inside — it's a confirmation surface, not a control panel. Use it to verify what you approved, then come back to Claude to act.</div>
+</article>
+
+<!-- STEP 5: Act -->
+<article class="step" id="step-5" data-step="5">
+  <div class="step-num">5</div>
+  <div class="step-header">
+    <h2>Act — per-action approval, one at a time</h2>
+  </div>
+
+  <p>Tell Claude you're ready to act. Before doing anything, Claude asks the global gate:</p>
+
+  <blockquote class="prompt">Have you reviewed the report? Are you okay with everything?</blockquote>
+
+  <p>After you confirm, Claude processes <strong>every</strong> approved item one at a time:</p>
+
+  <ul>
+    <li>Shows the URL and classifies it as <strong>one-click / token</strong> (Substack, Mailchimp, Beehiiv, ConvertKit, etc. that unsubscribe on a single GET) or <strong>multi-step</strong> (login or confirm-button required).</li>
+    <li>Asks for explicit per-item approval. Your earlier "yes" does <em>not</em> authorize subsequent items.</li>
+    <li>Takes the action — does not just open the page:
+      <ul>
+        <li><strong>One-click URLs:</strong> Claude calls <code>fetch()</code> programmatically, checks the response for success markers, and reports verified completion.</li>
+        <li><strong>Multi-step URLs:</strong> Claude opens in your browser and asks you to confirm completion.</li>
+        <li><strong>Mailto:</strong> Claude drafts the email, asks before opening your mail client.</li>
+      </ul>
+    </li>
+    <li>Logs everything to <code>action-log.md</code>.</li>
+  </ul>
+
+  <p>When the queue is drained, Claude posts an <strong>end-of-act summary</strong> with counts (completed / started-in-browser / failed / refused), a per-item table with ✓ / ⚠ / ✗ icons, and any items still needing your attention.</p>
+
+  <div class="warning"><strong>Claude will never:</strong> enter credentials, delete or archive messages, create filters, or submit a final confirmation form on your behalf without explicit per-action approval.</div>
+</article>
+
+<!-- TROUBLESHOOTING -->
+<section>
+  <h2>Troubleshooting</h2>
+
+  <details>
+    <summary>"node: command not found"</summary>
+    <div>
+      <ul>
+        <li>Node ships with Claude Code, so the install in step 1 should have given you both. Close and reopen Terminal/PowerShell.</li>
+        <li>Try running the Claude Code installer again.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>Apple Mail .mbox folder doesn't scan</summary>
+    <div>
+      <p>Apple Mail <code>.mbox</code> is a directory. Point the scanner at the <em>inner</em> file: <code>~/Downloads/INBOX.mbox/mbox</code>, not the directory itself.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Scanner finds zero unsubscribe candidates</summary>
+    <div>
+      <p>The heuristic flags streams with <code>List-Unsubscribe</code> headers and either high unread rate or volume. If the export is small (under ~50 messages), nothing may auto-qualify. Claude will still walk you through every brand in the review step so you can flag manually.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Approved item didn't appear in the report</summary>
+    <div>
+      <ul>
+        <li>The HTML report is regenerated on every <code>review</code> run. If you edited <code>approved-actions.json</code> by hand, ask Claude to re-render: <code>node bin/enuff_scan.mjs review enuff-is-enuff-report</code></li>
+        <li>Approved rows show a green badge, a green row highlight, and a top summary panel listing every approval.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>Unsubscribe URL opens a confirm-button page</summary>
+    <div>
+      <p>Some providers don't support one-click GET. Claude will detect the page and ask you to click the confirm button manually in your browser, then ask you to report back. The action log marks these as <em>started in browser — user to confirm</em>.</p>
+    </div>
+  </details>
+</section>
+
+<!-- PRIVACY -->
+<section>
+  <h2>Privacy</h2>
+
+  <ul>
+    <li>Mailbox exports stay on your machine — there is no server.</li>
+    <li>The scanner reads only message headers, never bodies or attachments.</li>
+    <li>The HTML report and JSON state are local files in <code>enuff-is-enuff-report/</code>.</li>
+    <li>No OAuth, no app passwords, no Gmail API. You hand over a file, not an account.</li>
+    <li>Nothing is uploaded or shared with anyone — only your conversation with Claude goes to Anthropic.</li>
+  </ul>
+</section>
+
+<footer>
+  <p>Questions? <a href="https://github.com/codecoincognition/enuff-is-enuff-unsubscribe/issues">Open an issue</a> on GitHub</p>
+  <p><em>Stop being yelled at by your inbox.</em></p>
+</footer>
+
+<script>
+let isScrolling = false;
+const progressSteps = document.querySelectorAll('.progress-step');
+
+const updateProgress = (stepNum) => {
+  progressSteps.forEach((ps, i) => {
+    ps.classList.remove('active', 'completed');
+    if (i + 1 < stepNum) ps.classList.add('completed');
+    if (i + 1 === stepNum) ps.classList.add('active');
+  });
+};
+
+function scrollToStep(num) {
+  setTimeout(() => {
+    const step = document.getElementById('step-' + num);
+    if (step) {
+      isScrolling = true;
+      updateProgress(num);
+      const y = step.getBoundingClientRect().top + window.pageYOffset - 80;
+      window.scrollTo(0, y);
+      setTimeout(() => { isScrolling = false; }, 100);
+    }
+  }, 0);
+}
+
+function showTab(id) {
+  const pairs = [
+    ['mode-dir', 'mode-plugin'],
+    ['scan-dir', 'scan-plugin']
+  ];
+
+  for (const pair of pairs) {
+    if (pair.includes(id)) {
+      pair.forEach(tabId => {
+        const el = document.getElementById(tabId);
+        if (el) el.classList.toggle('active', tabId === id);
+      });
+      const activeTab = document.getElementById(id);
+      if (activeTab) {
+        const container = activeTab.previousElementSibling;
+        if (container && container.classList.contains('tabs')) {
+          container.querySelectorAll('.tab').forEach((btn, i) => {
+            btn.classList.toggle('active', pair[i] === id);
+          });
+        }
+      }
+      break;
+    }
+  }
+}
+
+document.querySelectorAll('pre code').forEach(block => {
+  const pre = block.parentNode;
+  if (pre.closest('.terminal')) return;
+
+  pre.style.paddingRight = '60px';
+
+  const btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = 'Copy';
+  btn.onclick = (e) => {
+    e.preventDefault();
+    navigator.clipboard.writeText(block.textContent.trim()).then(() => {
+      btn.textContent = 'Copied!';
+      pre.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        pre.classList.remove('copied');
+      }, 1500);
+    });
+  };
+  pre.appendChild(btn);
+});
+
+const steps = document.querySelectorAll('.step');
+const observer = new IntersectionObserver(entries => {
+  if (isScrolling) return;
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const stepNum = parseInt(entry.target.dataset.step);
+      updateProgress(stepNum);
+    }
+  });
+}, { threshold: 0.3, rootMargin: '-80px 0px -50% 0px' });
+
+steps.forEach(step => observer.observe(step));
+</script>
+
+</body>
+</html>
