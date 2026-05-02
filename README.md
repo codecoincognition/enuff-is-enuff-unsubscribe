@@ -205,7 +205,31 @@ Pick whichever fits — both run the same workflow with the same safety rules.
 
 ### Option 1 — install as a Claude Code plugin
 
-Install via the Claude Code plugin marketplace (or your local marketplace pointing at this repo). Once installed, slash commands work from any directory:
+Plugin mode gives you slash commands that work from any directory.
+
+**From the public repo** (recommended):
+
+```text
+/plugin marketplace add codecoincognition/enuff-is-enuff-unsubscribe
+/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+```
+
+**From a local clone** (when you're modifying the plugin):
+
+```bash
+git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
+# then, in Claude Code:
+/plugin marketplace add ./enuff-is-enuff-unsubscribe
+/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+```
+
+**Or load directly without installing** (fastest for development — no copy to cache):
+
+```bash
+claude --plugin-dir ./enuff-is-enuff-unsubscribe
+```
+
+After installation, run `/reload-plugins` whenever you edit plugin files. Then call:
 
 ```text
 /enuff-is-enuff-unsubscribe:scan <path-to-mbox-or-eml-folder>

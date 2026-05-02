@@ -6,13 +6,39 @@ There are two ways to use `enuff-is-enuff-unsubscribe`. They run the same workfl
 
 ### Mode A — install as a Claude Code plugin
 
-Install via the Claude Code plugin marketplace (or a local marketplace pointing at this repo). Once installed, slash commands work from any directory:
+Three ways to install, in order of how often you'd use each:
+
+**From the public repo** (one-step, shareable). In any Claude Code session:
+
+```text
+/plugin marketplace add codecoincognition/enuff-is-enuff-unsubscribe
+/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+```
+
+**From a local clone** (when you're modifying the plugin):
+
+```bash
+git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
+# then, in Claude Code:
+/plugin marketplace add ./enuff-is-enuff-unsubscribe
+/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+```
+
+**Loaded directly without installing** (fastest dev loop — skips the marketplace and the cache copy):
+
+```bash
+claude --plugin-dir ./enuff-is-enuff-unsubscribe
+```
+
+Once installed, slash commands work from any directory:
 
 ```text
 /enuff-is-enuff-unsubscribe:scan <path-to-mbox-or-eml-folder>
 /enuff-is-enuff-unsubscribe:review
 /enuff-is-enuff-unsubscribe:act
 ```
+
+If you edit plugin files after installing, run `/reload-plugins` to pick up the changes.
 
 Best for: keeping the workflow available across all your projects, no need to clone anything.
 
