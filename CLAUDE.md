@@ -64,7 +64,7 @@ Key rules from the planning skill (read the file for the full version):
   ```
 - Tell the user to open `enuff-is-enuff-report/report.html` to confirm visually. Their approved items are highlighted in green (badge + row background + top summary panel).
 
-### Phase 3 — Act (per-action approval; browser-driven)
+### Phase 3 — Act (one global approval; browser-driven)
 Source of truth: `commands/act.md` and `skills/safe-action/SKILL.md`. Follow them exactly.
 
 Hard gate before doing anything:
@@ -94,4 +94,4 @@ Never enter credentials, delete/archive messages, create filters, or actively se
 
 ## What's allowed in directory mode that's NOT in plugin mode
 
-Nothing. Same safety rules. Same skills. Same per-action approval. Directory mode is just a different entry point.
+Nothing. Same safety rules. Same skills. Same approval model (curate the queue in review, one global yes at act time). Directory mode is just a different entry point.

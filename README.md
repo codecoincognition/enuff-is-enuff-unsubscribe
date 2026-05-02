@@ -139,7 +139,7 @@ Your selections write directly into `approved-actions.json`. Claude then renders
 
 `report.html` is **read-only** — it is a confirmation surface, not an interactive control panel. Approval lives in the chat with Claude.
 
-### 3. Act (per-action approval, browser-driven execution)
+### 3. Act (one global approval, browser-driven execution)
 
 | Plugin mode | Run `/enuff-is-enuff-unsubscribe:act` |
 | Directory mode | Just say *"I'm ready to act"* — `CLAUDE.md` routes to the `safe-action` skill |

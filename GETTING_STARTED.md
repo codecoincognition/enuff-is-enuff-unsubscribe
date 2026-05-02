@@ -64,7 +64,7 @@ The rest of this guide uses generic command snippets that work in either mode. I
 2. Run the local scanner.
 3. Review recurring email noise by company **with Claude in chat** (the brand-by-brand approval surface).
 4. Open the local HTML report to confirm what you approved.
-5. Tell Claude to act — Claude completes each unsubscribe one at a time, with per-action approval.
+5. Tell Claude to act — one "yes" authorizes the queue, then Claude works through every approved item and reports each completion.
 6. Read the end-of-act summary.
 
 No email cleanup action happens during the scan or the review.
