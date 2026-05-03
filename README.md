@@ -240,17 +240,28 @@ After installation, run `/reload-plugins` whenever you edit plugin files. Then c
 
 Plugin mode is best when you want unsubscribe workflows always available across your projects.
 
-### Option 2 — clone the repo and let Claude walk you through it
+### Option 2 — download the repo and let Claude walk you through it
 
-No plugin install required. Just:
+No plugin install, no git required.
+
+1. Go to [github.com/codecoincognition/enuff-is-enuff-unsubscribe](https://github.com/codecoincognition/enuff-is-enuff-unsubscribe).
+2. Click the green **Code** button → **Download ZIP**.
+3. Unzip it (double-click on Mac; right-click → Extract on Windows). You'll get a folder named `enuff-is-enuff-unsubscribe-main`.
+4. Move it somewhere easy to find — your Desktop works.
+5. In a terminal:
 
 ```bash
-git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
-cd enuff-is-enuff-unsubscribe
-claude   # or open this directory in any Claude Code session
+cd ~/Desktop/enuff-is-enuff-unsubscribe-main
+claude
 ```
 
-The repo's `CLAUDE.md` auto-loads and tells Claude to walk you through the same scan → review → act flow using the local `bin/enuff_scan.mjs`. Just say "I want to clean up my inbox" or paste an mbox path. No slash commands needed.
+The repo's `CLAUDE.md` auto-loads and tells Claude to walk you through the scan → review → act flow using the local `bin/enuff_scan.mjs`. Just say "I want to clean up my inbox" or paste an mbox path. No slash commands needed.
+
+If you have git, the one-liner equivalent is:
+
+```bash
+git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git && cd enuff-is-enuff-unsubscribe && claude
+```
 
 Directory mode is best for one-off use, trying it before committing to a plugin install, or running it in an environment where you don't want to install plugins (CI, ephemeral sandboxes, dev containers).
 

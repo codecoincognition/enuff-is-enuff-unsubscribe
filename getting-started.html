@@ -566,14 +566,31 @@
   </div>
 
   <div id="mode-dir" class="tab-content active">
-    <p><strong>Best for:</strong> trying it before installing, dev containers, ephemeral sandboxes.</p>
-    <p>Clone the repo and start a Claude Code session inside it. The repo's <code>CLAUDE.md</code> auto-loads and walks you through everything.</p>
-    <pre><code>git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
-cd enuff-is-enuff-unsubscribe
+    <p><strong>Best for:</strong> trying it before installing, dev containers, ephemeral sandboxes. No git or GitHub account required.</p>
+
+    <ol>
+      <li>Go to <a href="https://github.com/codecoincognition/enuff-is-enuff-unsubscribe">github.com/codecoincognition/enuff-is-enuff-unsubscribe</a></li>
+      <li>Click the green <strong>Code</strong> button → <strong>Download ZIP</strong></li>
+      <li>Unzip it (double-click on Mac; right-click → Extract on Windows). You'll get a folder named <code>enuff-is-enuff-unsubscribe-main</code>.</li>
+      <li>Move it somewhere easy to find — your Desktop works.</li>
+      <li>Open Terminal (Mac: <code>Cmd + Space</code>, type <em>Terminal</em>; Windows: <code>Win + X</code>, click <em>Windows PowerShell</em>), then:</li>
+    </ol>
+
+<pre><code>cd ~/Desktop/enuff-is-enuff-unsubscribe-main
 claude</code></pre>
-    <p>From here you don't run any commands yourself — you just talk to Claude in plain English. Things like:</p>
+
+    <p>The repo's <code>CLAUDE.md</code> auto-loads and walks you through everything. From here you don't run any commands yourself — you just talk to Claude in plain English. Things like:</p>
     <div class="you-type"><span class="you-type-label">You type</span>I want to clean up my inbox.</div>
     <div class="you-type"><span class="you-type-label">You type</span>Scan this mailbox: ~/Downloads/INBOX.mbox/mbox</div>
+
+    <details>
+      <summary>Already have git? One-liner alternative</summary>
+      <div>
+<pre><code>git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
+cd enuff-is-enuff-unsubscribe
+claude</code></pre>
+      </div>
+    </details>
   </div>
 
   <div id="mode-plugin" class="tab-content">

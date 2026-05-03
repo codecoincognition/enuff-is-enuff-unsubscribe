@@ -42,17 +42,28 @@ If you edit plugin files after installing, run `/reload-plugins` to pick up the 
 
 Best for: keeping the workflow available across all your projects, no need to clone anything.
 
-### Mode B — clone the repo and use directory mode
+### Mode B — download the repo and use directory mode
 
-No install required. Clone, `cd` in, start Claude:
+No plugin install, no git required.
+
+1. Go to [github.com/codecoincognition/enuff-is-enuff-unsubscribe](https://github.com/codecoincognition/enuff-is-enuff-unsubscribe).
+2. Click the green **Code** button → **Download ZIP**.
+3. Unzip (double-click on Mac; right-click → Extract on Windows). You'll get a folder named `enuff-is-enuff-unsubscribe-main`.
+4. Move it somewhere easy to find — your Desktop works.
+5. In a terminal:
 
 ```bash
-git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
-cd enuff-is-enuff-unsubscribe
+cd ~/Desktop/enuff-is-enuff-unsubscribe-main
 claude
 ```
 
 The repo's `CLAUDE.md` auto-loads and tells Claude to walk you through the same scan → review → act flow using the local `bin/enuff_scan.mjs`. Just say "I want to clean up my inbox" or paste an mbox path. No slash commands needed.
+
+Already have git? One-liner:
+
+```bash
+git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git && cd enuff-is-enuff-unsubscribe && claude
+```
 
 Best for: trying it before installing, one-off use, dev containers, ephemeral sandboxes, or any environment where you don't want to install plugins.
 
