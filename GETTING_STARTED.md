@@ -151,24 +151,30 @@ Source: https://www.fastmail.help/hc/en-us/articles/360060590573-Download-all-yo
 2. Wait for the folders you care about to sync locally.
 3. Export from that mail client as `.mbox` or scan local `.eml` files.
 
+### Drag the export into your project folder
+
+If you set up Mode B (directory mode), drag your `.mbox` file (or `.eml` folder) from Downloads into the `enuff-is-enuff-unsubscribe-main` folder you set up in step 1. That way you can refer to it by just its filename — no long paths to remember.
+
 ## Step 2: Run Scan
 
-**Plugin mode** — run the slash command:
+**Plugin mode** — run the slash command with the full path:
 
 ```text
 /enuff-is-enuff-unsubscribe:scan /path/to/mail.mbox
 /enuff-is-enuff-unsubscribe:scan /path/to/eml-folder
 ```
 
-**Directory mode** — just tell Claude in plain English. You never type the node command yourself; `CLAUDE.md` tells Claude what to run.
+**Directory mode** — if you dragged your export into the project folder (recommended), refer to it by just its filename:
 
-> Scan this mailbox: ~/Downloads/INBOX.mbox/mbox
+> Scan INBOX.mbox/mbox
 
-> Scan the eml folder at ~/Downloads/proton-export
+Or if it's still elsewhere, give the full path:
 
-Behind the scenes Claude runs `node bin/enuff_scan.mjs scan <path>` — you see the output, but you don't have to remember the command.
+> Scan ~/Downloads/INBOX.mbox/mbox
 
-For Apple Mail `.mbox` packages, point at the inner `mbox` file: `~/Downloads/INBOX.mbox/mbox`.
+You never type the node command yourself; `CLAUDE.md` tells Claude what to run.
+
+For Apple Mail `.mbox` packages, point at the inner `mbox` file: `INBOX.mbox/mbox`.
 
 The scanner is Node.js-only and uses only the standard library — nothing extra to install once Claude Code is set up.
 

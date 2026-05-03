@@ -573,6 +573,7 @@
       <li>Click the green <strong>Code</strong> button → <strong>Download ZIP</strong></li>
       <li>Unzip it (double-click on Mac; right-click → Extract on Windows). You'll get a folder named <code>enuff-is-enuff-unsubscribe-main</code>.</li>
       <li>Move it somewhere easy to find — your Desktop works.</li>
+      <li><strong>Drag your mailbox export into the same folder.</strong> Once your <code>.mbox</code> file or <code>.eml</code> folder lives inside <code>enuff-is-enuff-unsubscribe-main/</code>, paths are short and you don't have to remember where you put things.</li>
       <li>Open Terminal (Mac: <code>Cmd + Space</code>, type <em>Terminal</em>; Windows: <code>Win + X</code>, click <em>Windows PowerShell</em>), then:</li>
     </ol>
 
@@ -581,7 +582,7 @@ claude</code></pre>
 
     <p>The repo's <code>CLAUDE.md</code> auto-loads and walks you through everything. From here you don't run any commands yourself — you just talk to Claude in plain English. Things like:</p>
     <div class="you-type"><span class="you-type-label">You type</span>I want to clean up my inbox.</div>
-    <div class="you-type"><span class="you-type-label">You type</span>Scan this mailbox: ~/Downloads/INBOX.mbox/mbox</div>
+    <div class="you-type"><span class="you-type-label">You type</span>Scan INBOX.mbox/mbox</div>
 
     <details>
       <summary>Already have git? One-liner alternative</summary>
@@ -697,7 +698,7 @@ claude</code></pre>
     </div>
   </details>
 
-  <div class="tip"><strong>Save the export somewhere easy to find.</strong> You'll hand the path to Claude in step 3.</div>
+  <div class="warning"><strong>Move the export into your <code>enuff-is-enuff-unsubscribe-main</code> folder.</strong> Drag the <code>.mbox</code> file (or <code>.eml</code> folder) from your Downloads into the project folder you set up in step 1. Then you can refer to it by just its filename — no long paths to remember.</div>
 </article>
 
 <!-- STEP 3: Scan -->
@@ -715,13 +716,15 @@ claude</code></pre>
   </div>
 
   <div id="scan-dir" class="tab-content active">
-    <p>Tell Claude where your export is:</p>
-    <div class="you-type"><span class="you-type-label">You type</span>Scan this mailbox: ~/Downloads/INBOX.mbox/mbox</div>
+    <p>Tell Claude what to scan. If you moved the mailbox into the project folder (recommended in step 2), the filename alone is enough:</p>
+    <div class="you-type"><span class="you-type-label">You type</span>Scan INBOX.mbox/mbox</div>
+    <p>Or, if it's still in Downloads, give the full path:</p>
+    <div class="you-type"><span class="you-type-label">You type</span>Scan ~/Downloads/INBOX.mbox/mbox</div>
     <p>That's the whole step. Claude does the rest.</p>
   </div>
 
   <div id="scan-plugin" class="tab-content">
-    <p>Run the slash command:</p>
+    <p>Run the slash command with the full path to your export:</p>
     <pre><code>/enuff-is-enuff-unsubscribe:scan ~/Downloads/INBOX.mbox/mbox</code></pre>
   </div>
 
