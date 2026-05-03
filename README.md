@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/enuff-is-enuff.png" alt="enuff is enuff" width="240">
+</p>
+
 # enuff-is-enuff-unsubscribe
 
 ## Concept

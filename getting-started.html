@@ -78,8 +78,19 @@
     /* Header */
     header {
       text-align: center;
-      padding: 2.5rem 0 1.25rem;
+      padding: 2rem 0 1.25rem;
       margin-bottom: 1.75rem;
+    }
+    .hero-logo {
+      display: block;
+      width: clamp(140px, 22vw, 200px);
+      height: auto;
+      margin: 0 auto 1.25rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 28px -14px rgba(0,0,0,0.35);
+    }
+    @media (prefers-color-scheme: dark) {
+      .hero-logo { box-shadow: 0 8px 28px -14px rgba(0,0,0,0.6); }
     }
     .tagline {
       color: var(--text);
@@ -545,6 +556,7 @@
 </nav>
 
 <header>
+  <img src="assets/enuff-is-enuff.png" alt="enuff is enuff" class="hero-logo">
   <h1>Enuff is enuff.</h1>
   <p class="tagline">Find every sender that won't shut up. Make them stop.</p>
   <p class="meta-line">Local-first <span class="dot">·</span> No credentials <span class="dot">·</span> Curated by you</p>
