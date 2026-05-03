@@ -13,6 +13,7 @@ Three ways to install, in order of how often you'd use each:
 ```text
 /plugin marketplace add codecoincognition/enuff-is-enuff-unsubscribe
 /plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+/reload-plugins
 ```
 
 **From a local clone** (when you're modifying the plugin):
@@ -22,6 +23,7 @@ git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
 # then, in Claude Code:
 /plugin marketplace add ./enuff-is-enuff-unsubscribe
 /plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+/reload-plugins
 ```
 
 **Loaded directly without installing** (fastest dev loop — skips the marketplace and the cache copy):
@@ -30,7 +32,7 @@ git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
 claude --plugin-dir ./enuff-is-enuff-unsubscribe
 ```
 
-Once installed, slash commands work from any directory:
+Once loaded, slash commands work from any directory:
 
 ```text
 /enuff-is-enuff-unsubscribe:scan <path-to-mbox-or-eml-folder>
@@ -38,7 +40,7 @@ Once installed, slash commands work from any directory:
 /enuff-is-enuff-unsubscribe:act
 ```
 
-If you edit plugin files after installing, run `/reload-plugins` to pick up the changes.
+If you edit any plugin file after installing, run `/reload-plugins` again to pick up the changes without restarting Claude Code.
 
 Best for: keeping the workflow available across all your projects, no need to clone anything.
 

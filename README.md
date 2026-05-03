@@ -217,6 +217,7 @@ Plugin mode gives you slash commands that work from any directory.
 ```text
 /plugin marketplace add codecoincognition/enuff-is-enuff-unsubscribe
 /plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+/reload-plugins
 ```
 
 **From a local clone** (when you're modifying the plugin):
@@ -226,6 +227,7 @@ git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
 # then, in Claude Code:
 /plugin marketplace add ./enuff-is-enuff-unsubscribe
 /plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+/reload-plugins
 ```
 
 **Or load directly without installing** (fastest for development — no copy to cache):
@@ -234,13 +236,15 @@ git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
 claude --plugin-dir ./enuff-is-enuff-unsubscribe
 ```
 
-After installation, run `/reload-plugins` whenever you edit plugin files. Then call:
+Once loaded, slash commands work from any directory:
 
 ```text
 /enuff-is-enuff-unsubscribe:scan <path-to-mbox-or-eml-folder>
 /enuff-is-enuff-unsubscribe:review
 /enuff-is-enuff-unsubscribe:act
 ```
+
+If you edit any plugin file after installing, run `/reload-plugins` again to pick up the changes without restarting Claude Code.
 
 Plugin mode is best when you want unsubscribe workflows always available across your projects.
 

@@ -607,18 +607,21 @@ claude</code></pre>
     <p><strong>Best for:</strong> always-on access from any project.</p>
     <p><strong>Install from the public repo</strong> (one-step, shareable) — in any Claude Code session, run:</p>
 <pre><code>/plugin marketplace add codecoincognition/enuff-is-enuff-unsubscribe
-/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local</code></pre>
+/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+/reload-plugins</code></pre>
     <p><strong>Or install from a local clone</strong> (good for testing changes you've made):</p>
 <pre><code>git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
 # in any Claude Code session:
 /plugin marketplace add ./enuff-is-enuff-unsubscribe
-/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local</code></pre>
+/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+/reload-plugins</code></pre>
     <p><strong>Or load directly without a marketplace</strong> (fastest dev loop — no install, no caching):</p>
 <pre><code>claude --plugin-dir ./enuff-is-enuff-unsubscribe</code></pre>
-    <p>Once installed, slash commands work from anywhere:</p>
+    <p>Once loaded, slash commands work from anywhere:</p>
 <pre><code>/enuff-is-enuff-unsubscribe:scan ~/Downloads/INBOX.mbox/mbox
 /enuff-is-enuff-unsubscribe:review
 /enuff-is-enuff-unsubscribe:act</code></pre>
+    <p class="meta-line" style="margin-top:0.5rem;font-size:0.8rem;">After editing any plugin file, run <code>/reload-plugins</code> again to pick up the changes.</p>
   </div>
 
   <div class="tip"><strong>Nothing else to install.</strong> Once Claude Code is set up, this workflow runs out of the box — no extra runtimes, no package installs.</div>
