@@ -4,112 +4,93 @@
 
 # enuff-is-enuff-unsubscribe
 
-## Concept
+A blunt, local-first inbox cleanup workflow for Claude Code.
 
-`enuff-is-enuff-unsubscribe` is a Claude plugin that helps people stop recurring email junk: newsletters, promos, abandoned SaaS drips, trial reminders, brand spam, and zombie senders that keep showing up.
+## What it does
 
-It is inspired by the same product energy as `just-fucking-cancel`: a blunt, emotionally obvious consumer painkiller where Claude does annoying digital chores with user approval.
+Claude scans an exported mailbox, ranks the senders that won't leave you alone — newsletters you never read, ecommerce promos, abandoned SaaS drips, "we miss you" campaigns, zombie senders — and helps you unsubscribe one item at a time, with your approval, locally, without ever touching your live inbox.
 
-## One-line pitch
+Inspired by `just-fucking-cancel`: Claude does the annoying digital chores, you stay in charge.
 
-Claude scans your inbox, finds the recurring senders that will not leave you alone, and helps you unsubscribe, filter, delete, or escalate them in bulk.
+## Install
 
-## Why this should exist as a Claude plugin
+Pick whichever fits — both run the same workflow with the same safety rules.
 
-Normal unsubscribe tools give users a sender list.
+### Option 1 — install as a Claude Code plugin
 
-Claude can do something more useful:
+Plugin mode gives you slash commands that work from any directory.
 
-- understand which emails are actually junk versus useful account messages
-- distinguish newsletters from account/security/payment relationships
-- rank the worst offenders by volume, recency, and annoyance
-- explain why each sender was flagged
-- find unsubscribe links and headers
-- draft unsubscribe or deletion emails when links fail
-- guide browser unsubscribe flows
-- create Gmail filter rules when unsubscribe is not possible
-- keep irreversible actions behind explicit approval
-
-The product is not just "bulk unsubscribe." It is "make the inbox stop harassing me."
-
-## Target user
-
-People whose inbox is full of:
-
-- newsletters they never read
-- ecommerce promos
-- abandoned SaaS onboarding drips
-- creator/course launch emails
-- conference/event promos
-- coupon spam
-- old account updates
-- trial reminders
-- repeated "we miss you" campaigns
-- senders that make unsubscribe intentionally annoying
-
-## Viral hook
-
-The shareable moment:
-
-> `enuff-is-enuff-unsubscribe` found 412 recurring senders in my inbox. I killed 137 subscriptions in one sitting.
-
-Other hooks:
-
-- "Claude showed me who was yelling in my inbox."
-- "I stopped 60% of recurring inbox noise in 20 minutes."
-- "It found old SaaS tools still emailing me from trials I forgot existed."
-
-## Marketplace positioning
-
-Name:
+**From the public repo** (recommended):
 
 ```text
-enuff-is-enuff-unsubscribe
+/plugin marketplace add codecoincognition/enuff-is-enuff-unsubscribe
+/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+/reload-plugins
 ```
 
-Display title:
+> **Note:** `enuff-is-enuff-local` is the marketplace name (defined in `.claude-plugin/marketplace.json`), not a typo. The format is always `plugin-name@marketplace-name`.
+
+**From a local clone** (when you're modifying the plugin):
+
+```bash
+git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
+# then, in Claude Code:
+/plugin marketplace add ./enuff-is-enuff-unsubscribe
+/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+/reload-plugins
+```
+
+**Or load directly without installing** (fastest for development — no copy to cache):
+
+```bash
+claude --plugin-dir ./enuff-is-enuff-unsubscribe
+```
+
+Once loaded, slash commands work from any directory:
 
 ```text
-Enuff Is Enuff Unsubscribe
+/enuff-is-enuff-unsubscribe:scan <path-to-mbox-or-eml-folder>
+/enuff-is-enuff-unsubscribe:review
+/enuff-is-enuff-unsubscribe:act
 ```
 
-Short description:
+If you edit any plugin file after installing, run `/reload-plugins` again to pick up the changes without restarting Claude Code.
 
-> Find recurring email junk and make it stop with Claude.
+### Option 2 — download the repo and let Claude walk you through it
 
-Long description:
+No plugin install, no git required.
 
-> Enuff Is Enuff Unsubscribe turns Claude into an inbox cleanup agent. It scans recent email, clusters recurring senders, ranks the worst noise, finds unsubscribe paths, drafts opt-out messages, and helps you unsubscribe, filter, or delete in bulk with approval.
+1. Go to [github.com/codecoincognition/enuff-is-enuff-unsubscribe](https://github.com/codecoincognition/enuff-is-enuff-unsubscribe).
+2. Click the green **Code** button → **Download ZIP**.
+3. Unzip it (double-click on Mac; right-click → Extract on Windows). You'll get a folder named `enuff-is-enuff-unsubscribe-main`.
+4. Move it somewhere easy to find — your Desktop works.
+5. In a terminal:
 
-## Product stance
-
-This plugin should be local-first and privacy-forward.
-
-Default MVP should avoid becoming a hosted SaaS with full inbox access. The safer first version should support one or both of:
-
-- local Gmail export / `.mbox`
-- user-provided email samples / exported headers
-
-Later versions can add Gmail connector or OAuth flows if marketplace policy and user trust are clear.
-
-## Core outputs
-
-```text
-enuff-is-enuff-report/
-  report.html
-  report-state.json
-  sender-ranking.csv
-  recommended-actions.md
-  approved-actions.json
-  unsubscribe-links.csv
-  filter-rules.md
-  draft-unsubscribe-emails/
-    sender-name.md
+```bash
+cd ~/Desktop/enuff-is-enuff-unsubscribe-main
+claude
 ```
 
-## How it works (end-to-end)
+The repo's `CLAUDE.md` auto-loads and walks Claude through the scan → review → act flow using the local `bin/enuff_scan.mjs`. Just say "I want to clean up my inbox" or paste an mbox path. No slash commands needed.
 
-The workflow is the same in plugin mode and directory mode (see *Two ways to use this* below). Only the entry points differ.
+If you have git, the one-liner equivalent is:
+
+```bash
+git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git && cd enuff-is-enuff-unsubscribe && claude
+```
+
+### Quick smoke test (either mode)
+
+```bash
+node bin/enuff_scan.mjs scan examples/sample-inbox
+open enuff-is-enuff-report/report.html
+```
+
+The sample inbox is 20 fake `.eml` files spanning every classifier category — perfect for trying the brand-by-brand review without using your real mail.
+
+## How it works
+
+The workflow is the same in plugin mode and directory mode. Only the entry points differ.
 
 ### 1. Scan
 
@@ -167,111 +148,31 @@ For each approved item, Claude:
 
 When the queue is drained, Claude posts an **end-of-act summary**: counts (completed / needs-verify / mailto-pending / failed), a per-item table with ✓/⚠/✗ icons, and any items still needing your attention.
 
-The global "yes" authorizes opening unsubscribe URLs and drafting mailto messages — nothing else. Claude never enters credentials, deletes/archives messages, creates filters, or sends mail on your behalf.
+## Why it exists
 
-## What makes it better than a basic unsubscriber
+Normal unsubscribe tools give you a sender list. This plugin does something more useful:
 
-Most unsubscribe tools optimize for speed. This plugin should optimize for judgment.
+- **Distinguishes** newsletters from account/security/payment relationships, not just by domain but by header signals (`List-Unsubscribe`, `List-ID`) and subject keywords.
+- **Ranks** the worst offenders by volume, recency, and unread rate — so the loudest noise comes first.
+- **Explains** why each sender was flagged (recurring promo language, header-based unsub path, no-reply marketing domain, etc.).
+- **Picks the right action** per stream: token-URL one-click, multi-step browser flow, mailto draft, or filter-only.
+- **Refuses to touch** banking/security alerts, receipts, payroll, healthcare, or government senders — even if you accidentally select them.
+- **Keeps every irreversible action behind your approval**, with full action logs.
 
-It should know:
+The product is not "bulk unsubscribe." It's "make the inbox stop harassing me, with judgment, and don't break the things I actually need."
 
-- do not unsubscribe from banking/security alerts
-- do not delete receipts blindly
-- do not click suspicious unsubscribe links
-- use header unsubscribe when possible
-- prefer filters for senders where unsubscribe is risky
-- identify account relationships worth deleting separately
-- preserve evidence before bulk deletion
+## Privacy & safety
 
-## First release boundary
+Local-first by design — there is no server.
 
-Version 0.1 should do:
+- Mailbox exports stay on your machine. Nothing is uploaded.
+- The scanner reads only message headers (no bodies, no attachments).
+- No OAuth, no app passwords, no Gmail API. You hand over a file, not an account.
+- Account/security, financial, payroll, healthcare, and government senders are **locked** from the action queue automatically — even if you accidentally select them.
+- Every action is logged to `enuff-is-enuff-report/action-log.md` with a timestamp, the URL, the method used, and the verified outcome.
+- The plugin will never enter credentials, delete or archive messages, create filters, or send mail without your explicit approval.
 
-- analyze local `.mbox` or exported email metadata
-- classify recurring senders
-- rank worst offenders
-- extract unsubscribe links when available
-- generate a reviewable HTML report
-- generate draft unsubscribe emails
-- generate Gmail filter suggestions
-
-Version 0.1 should not:
-
-- directly delete email
-- directly unsubscribe without approval
-- ask for broad inbox credentials by default
-- claim to remove all spam
-- click unknown links automatically
-- handle every email provider
-
-## Two ways to use this
-
-Pick whichever fits — both run the same workflow with the same safety rules.
-
-### Option 1 — install as a Claude Code plugin
-
-Plugin mode gives you slash commands that work from any directory.
-
-**From the public repo** (recommended):
-
-```text
-/plugin marketplace add codecoincognition/enuff-is-enuff-unsubscribe
-/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
-/reload-plugins
-```
-
-**From a local clone** (when you're modifying the plugin):
-
-```bash
-git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git
-# then, in Claude Code:
-/plugin marketplace add ./enuff-is-enuff-unsubscribe
-/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
-/reload-plugins
-```
-
-**Or load directly without installing** (fastest for development — no copy to cache):
-
-```bash
-claude --plugin-dir ./enuff-is-enuff-unsubscribe
-```
-
-Once loaded, slash commands work from any directory:
-
-```text
-/enuff-is-enuff-unsubscribe:scan <path-to-mbox-or-eml-folder>
-/enuff-is-enuff-unsubscribe:review
-/enuff-is-enuff-unsubscribe:act
-```
-
-If you edit any plugin file after installing, run `/reload-plugins` again to pick up the changes without restarting Claude Code.
-
-Plugin mode is best when you want unsubscribe workflows always available across your projects.
-
-### Option 2 — download the repo and let Claude walk you through it
-
-No plugin install, no git required.
-
-1. Go to [github.com/codecoincognition/enuff-is-enuff-unsubscribe](https://github.com/codecoincognition/enuff-is-enuff-unsubscribe).
-2. Click the green **Code** button → **Download ZIP**.
-3. Unzip it (double-click on Mac; right-click → Extract on Windows). You'll get a folder named `enuff-is-enuff-unsubscribe-main`.
-4. Move it somewhere easy to find — your Desktop works.
-5. In a terminal:
-
-```bash
-cd ~/Desktop/enuff-is-enuff-unsubscribe-main
-claude
-```
-
-The repo's `CLAUDE.md` auto-loads and tells Claude to walk you through the scan → review → act flow using the local `bin/enuff_scan.mjs`. Just say "I want to clean up my inbox" or paste an mbox path. No slash commands needed.
-
-If you have git, the one-liner equivalent is:
-
-```bash
-git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git && cd enuff-is-enuff-unsubscribe && claude
-```
-
-Directory mode is best for one-off use, trying it before committing to a plugin install, or running it in an environment where you don't want to install plugins (CI, ephemeral sandboxes, dev containers).
+The "act" phase opens unsubscribe URLs in your browser and drafts mailto messages — nothing else.
 
 ## What's in this repo
 
@@ -282,41 +183,17 @@ commands/                     slash command bodies (option 1)
 skills/                       canonical workflow skills (used by both options)
 agents/                       agent personas (used by both options)
 bin/enuff_scan.mjs            scanner / report renderer / serve (Node stdlib only)
-examples/                     sample .eml files for trying it out
-  sample.eml, receipt.eml, security.eml          minimal 3-message smoke test
-  sample-inbox/                                  ~20 fake messages spanning all classifier categories
+examples/
+  sample.eml + receipt.eml + security.eml   minimal 3-message smoke test
+  sample-inbox/                             ~20 fake messages spanning all classifier categories
+assets/                       logos + marketplace screenshots + capture recipe
 LICENSE                       MIT
 getting-started.html          GitHub-renderable overview page
 ```
 
-Quick smoke test (works in either mode):
-
-```bash
-# minimal — 3 messages, just confirms the pipeline runs
-node bin/enuff_scan.mjs scan examples
-
-# realistic — ~20 fake messages spanning newsletters, promos, receipts,
-# security alerts, SaaS drips, social notifications, and a high-risk
-# financial sender (great for trying the brand-by-brand review)
-node bin/enuff_scan.mjs scan examples/sample-inbox
-
-open enuff-is-enuff-report/report.html  # macOS
-# or: node bin/enuff_scan.mjs serve enuff-is-enuff-report
-```
-
 ## Requirements
 
-Only Claude Code. The scanner uses Node.js standard library only — nothing extra to install.
-
-## Why people would install it
-
-Because the pain is immediate:
-
-> My inbox is full of companies that will not shut up.
-
-The plugin promise is equally immediate:
-
-> Claude will show you who is responsible and help make them stop.
+Only Claude Code. The scanner uses the Node.js standard library only — nothing extra to install.
 
 ## License
 
