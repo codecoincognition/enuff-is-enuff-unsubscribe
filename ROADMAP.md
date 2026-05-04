@@ -13,13 +13,22 @@
 - Two install paths: Claude Code plugin marketplace + directory mode via `CLAUDE.md`
 - 20 fake `.eml` fixtures in `examples/sample-inbox/` for end-to-end testing
 
-## v0.2 (planned)
+## v0.2 (shipped)
 
-- **Outlook `.pst` support.** Currently the docs ask Outlook users to import-then-export via Apple Mail/Thunderbird as a workaround. v0.2 will ship a `convert-pst.mjs` helper that shells out to `readpst` (from `libpst`, brew-installable) to convert `.pst` → folder of `.eml`. Keeps the core scanner stdlib-only; only Outlook users need the extra brew install.
+- **Browser-control act phase.** The act phase now drives Chrome via a browser-control MCP (Claude-for-Chrome, gstack `/browse`, or compatible) to actually click the right unsubscribe controls and verify completion by reading DOM state.
+- **Provider Playbook.** Per-provider recipes for Substack, Mailchimp, Beehiiv, ConvertKit, Buttondown, SendGrid, and mailto unsubscribes — each describes URL pattern, page type, what to click, and what DOM state proves completion.
+- **DOM-state verification, not body-keyword matching.** The earlier `fetch() + grep response body` approach was unreliable (provider SPA shells contain success/failure strings as JS bundles regardless of state). Replaced with `aria-checked` / page-text / URL-change verification.
+- **Substack classifier fix.** `/action/disable_email?token=…` URLs are now correctly labeled `multi_step_settings` (deep-link to email-preferences) instead of `open_link` (one-click GET). The Provider Playbook handles the toggle-flip.
+- **Degraded mode** for users without any browser-control MCP — falls back to `open <url>` and explicit click instructions, with every item marked "needs your verification."
 
 ## v0.3 (planned)
 
-- **`--dry-run` flag for the act phase.** Walks the entire approved queue and reports what *would* be done — fetch URL, expected response markers, items that would need user follow-up — without firing a single network request. Useful for previewing a large queue before authorizing it, and for CI / red-team audits.
+- **Outlook `.pst` support.** Ships a `convert-pst.mjs` helper that shells out to `readpst` (from `libpst`, brew-installable) to convert `.pst` → folder of `.eml`. Keeps the core scanner stdlib-only; only Outlook users need the extra brew install.
+
+## v0.4 (planned)
+
+- **`--dry-run` flag for the act phase.** Walks the entire approved queue and reports what *would* be done — recipe selected, expected DOM verification, items that would need user follow-up — without firing a single click. Useful for previewing a large queue before authorizing it, and for CI / red-team audits.
+- **Per-provider recipe expansion.** More recipes for the long-tail providers as users report them.
 
 ## Out of scope (will not ship)
 

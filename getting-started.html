@@ -624,7 +624,28 @@ claude</code></pre>
     <p class="meta-line" style="margin-top:0.5rem;font-size:0.8rem;">After editing any plugin file, run <code>/reload-plugins</code> again to pick up the changes.</p>
   </div>
 
-  <div class="tip"><strong>Nothing else to install.</strong> Once Claude Code is set up, this workflow runs out of the box — no extra runtimes, no package installs.</div>
+  <h3 style="margin-top:32px;">Optional but strongly recommended: enable Chrome control</h3>
+
+  <p>The act phase actually drives Chrome to flip the right toggles or click the right confirm buttons, then verifies the unsubscribe really took by reading the page state. Without browser control, the plugin runs in <strong>degraded mode</strong> — it can open unsubscribe URLs in your browser, but you click the toggles yourself and nothing is verified.</p>
+
+  <p>To enable real automation, install <strong>Claude for Chrome</strong> (Anthropic's official Chrome extension + MCP):</p>
+
+  <ol>
+    <li>Get the extension at <a href="https://claude.com/product/claude-for-chrome">claude.com/product/claude-for-chrome</a> and follow the install steps.</li>
+    <li>In any Claude Code session, run <code>/mcp</code> to confirm <code>claude-in-chrome</code> appears in the active MCP servers list.</li>
+    <li>Try <code>/chrome</code> in Claude Code — it should attach to your running Chrome and open a tab.</li>
+  </ol>
+
+  <p>Once installed, the act phase navigates each approved unsubscribe URL, identifies the provider (Substack settings page, Mailchimp confirmation, Beehiiv one-click, etc.), clicks the right control, and reads <code>aria-checked</code> (or equivalent DOM state) to verify the unsubscribe really happened. Every action is screenshotted to the action log.</p>
+
+  <details>
+    <summary>Compatible alternatives</summary>
+    <div>
+      <p>Any browser-control MCP that exposes navigate / click / read-DOM / screenshot will work — gstack <code>/browse</code>, custom Chrome DevTools Protocol MCPs, etc. The plugin uses generic browser-control patterns, not Anthropic-specific APIs.</p>
+    </div>
+  </details>
+
+  <div class="tip"><strong>No browser-control MCP? Still works.</strong> The plugin falls back to <code>open &lt;url&gt;</code> for each approved item and tells you exactly what to click in plain English. Slower, no verification, but safe and universal.</div>
 </article>
 
 <!-- STEP 2: Export Mail -->
@@ -785,12 +806,18 @@ claude</code></pre>
 
   <p>One "yes" authorizes the whole queue. You curated it brand-by-brand in step 4; Claude won't ask again per URL — that would just be friction. After your yes, Claude works through the queue and announces each completion as it goes:</p>
 
-  <ul>
-    <li><strong>One-click / token URLs</strong> (Substack, Mailchimp, Beehiiv, ConvertKit, etc. that unsubscribe on a single GET): Claude calls <code>fetch()</code> programmatically, checks the response for success markers, and reports verified completion.</li>
-    <li><strong>Multi-step URLs</strong> (login or confirm-button required): Claude opens the page in your browser and notes the item as <em>needs your verification</em> in the final summary — Claude doesn't block the queue waiting for you.</li>
-    <li><strong>Mailto unsubscribes:</strong> Claude drafts the email and opens it in your mail client; you press send.</li>
-    <li>Every action lands in <code>action-log.md</code>.</li>
-  </ul>
+  <p>For every approved item, Claude:</p>
+  <ol>
+    <li><strong>Navigates</strong> to the URL via Chrome control.</li>
+    <li><strong>Reads the actual page</strong> — never assumes from the URL shape. A <code>disable_email?token=…</code> URL looks like a one-click endpoint but is actually a Substack settings deep-link. URL pattern matching produces false confidence.</li>
+    <li><strong>Describes the action it's about to take, in one line</strong> (e.g., <em>"This is the Substack settings page; the 'Marketing emails' toggle is currently on; I'll flip it off"</em>).</li>
+    <li><strong>Executes</strong> via real Chrome click events.</li>
+    <li><strong>Verifies via DOM state</strong> (<code>aria-checked</code>, page text, URL change) — never via response-body text scraping, which produces false positives.</li>
+    <li><strong>Screenshots</strong> the post-click state for the action log.</li>
+    <li>If the page is ambiguous (login wall, unexpected popup, multiple plausible buttons), Claude does <em>not</em> click — marks the item as <em>needs your verification</em> in the summary.</li>
+  </ol>
+
+  <p>Mailto unsubscribes are drafted and opened in your mail client pre-filled — you press send. Everything lands in <code>action-log.md</code>.</p>
 
   <p>When the queue is drained, Claude posts an <strong>end-of-act summary</strong> with counts (completed / needs-verify / mailto-pending / failed), a per-item table with ✓ / ⚠ / ✗ icons, and a pointer to anything still needing your attention.</p>
 

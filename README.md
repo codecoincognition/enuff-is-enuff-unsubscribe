@@ -79,6 +79,22 @@ If you have git, the one-liner equivalent is:
 git clone https://github.com/codecoincognition/enuff-is-enuff-unsubscribe.git && cd enuff-is-enuff-unsubscribe && claude
 ```
 
+### Browser control (strongly recommended)
+
+The act phase actually drives Chrome to flip the right toggles or click the right confirm buttons, then verifies completion by reading the DOM. Without browser control, the plugin runs in **degraded mode** — it can open unsubscribe URLs in your browser, but you click the toggles yourself, and nothing is verified.
+
+To enable real automation, install **Claude for Chrome** (Anthropic's official Chrome extension + MCP):
+
+1. Get the extension from [claude.com/product/claude-for-chrome](https://claude.com/product/claude-for-chrome) and follow the install steps there.
+2. Confirm it's registered with Claude Code by checking that the `mcp__claude-in-chrome__*` tool family appears in any new session (e.g., run `/mcp` in Claude Code to list active MCP servers).
+3. In any Claude Code session, you can also test with `/chrome` — it should attach to your running Chrome and open a tab.
+
+Once installed, the act phase navigates each approved unsubscribe URL, identifies the provider (Substack settings page, Mailchimp confirmation page, Beehiiv one-click, etc.), clicks the right control, and reads `aria-checked` (or equivalent DOM state) to verify the unsubscribe really happened. Every action is screenshotted into the action log.
+
+**Compatible alternatives** that expose navigate/click/read-DOM/screenshot also work: gstack `/browse`, custom CDP-based MCPs, etc. The plugin uses generic browser-control patterns, not Anthropic-specific APIs.
+
+**Without any browser-control MCP**, the plugin still runs — it falls back to `open <url>` for each approved item and tells you exactly what to click. It's slower, no verification, but safe and universal.
+
 ### Quick smoke test (either mode)
 
 ```bash
@@ -137,14 +153,17 @@ Have you reviewed the report? Are you okay with everything?
 
 Before processing, Claude shows you the queue (count + a one-line per-item summary) so you have a final visual pass. **One global "yes" then authorizes the entire queue** — Claude does not ask again per URL, because the per-item decisions already happened during review.
 
-For each approved item, Claude:
+For every approved item, Claude:
 
-1. Classifies the URL as **one-click / token** (Substack/Mailchimp/Beehiiv/etc. that unsubscribe on GET), **multi-step / account-scoped** (login or confirm required), or **mailto**.
-2. Takes the action and announces the result inline as it goes:
-   - **One-click / token URLs** → `fetch(url, { method: 'GET' })`, check the response for success markers, report verified completion.
-   - **Multi-step URLs** → `open <url>` in your browser; noted as *needs your verification* in the final summary so the queue keeps moving.
-   - **Mailto** → drafts the email and `open "mailto:…"` so it lands pre-filled in your mail client; you press send.
-3. Logs the action to `enuff-is-enuff-report/action-log.md`.
+1. **Navigates** to the URL via Chrome control.
+2. **Reads the actual rendered page** — never pre-classifies based on URL shape. A `disable_email?token=…` URL *looks* like a one-click endpoint but is actually a Substack settings deep-link. The plugin learned this the hard way; URL pattern matching produces false confidence.
+3. **States the action it's about to take, in one line** (e.g., *"This is the Substack settings page; the 'Marketing emails' toggle is currently on; I'll flip it off"*).
+4. **Executes** via real Chrome click events (synthetic JS clicks are dropped by some React component libraries — must use the real event path).
+5. **Verifies via DOM state** — `aria-checked` on toggles, page-text change, URL redirect. Body-keyword matching against the rendered HTML is forbidden; providers' SPA shells contain success/failure strings as JS bundles regardless of actual state.
+6. **Screenshots** the post-action page for the log.
+7. If the page state is ambiguous (login wall, unexpected popup, multiple plausible buttons), Claude does **not** click — it marks the item `needs your verification` and moves on.
+8. Mailto unsubscribes are drafted and `open "mailto:…"`-ed into the user's mail client pre-filled; the user presses send.
+9. Logs every action to `enuff-is-enuff-report/action-log.md` with DOM state before/after, recipe used, and screenshot reference.
 
 When the queue is drained, Claude posts an **end-of-act summary**: counts (completed / needs-verify / mailto-pending / failed), a per-item table with ✓/⚠/✗ icons, and any items still needing your attention.
 

@@ -74,18 +74,26 @@ Before processing the queue, show the user a one-screen summary of what's about 
 
 After the global yes, **process the entire queue without asking per item.** The user already chose what to flag during the review phase — re-asking for every URL is redundant friction. Announce each completion in plain English as you go.
 
+**Tooling required:** the act phase drives Chrome via a browser-control MCP — `mcp__claude-in-chrome__*` (Anthropic's Claude-in-Chrome extension) is the canonical implementation; gstack `/browse` and other navigate/click/read-DOM/screenshot MCPs are compatible. If no browser-control MCP is available, ask the user once whether to install Claude-in-Chrome or proceed in **degraded mode** (open + manual click, no verification).
+
+**Always treat every URL as multi-step until you've read the page.** URL shape is unreliable — `disable_email?token=…` looks like one-click but is actually a Substack settings deep-link. Do not pre-classify based on the URL.
+
 For each approved item:
-1. Classify the URL as **one-click / token** (Substack, Mailchimp, Beehiiv, ConvertKit, Buttondown, SendGrid, etc. — provider unsubscribes on GET) vs **multi-step / account-scoped** (login or confirm-button required) vs **mailto**.
-2. **Take the action:**
-   - **One-click / token URLs:** call Node `fetch(url, { method: 'GET', redirect: 'follow' })`. Check status 2xx and body for markers like `unsubscribed`, `disabled`, `removed`, `cancelled`, `you have been`, `no longer`, `success`. Report verified completion. If markers are missing or status is non-2xx, fall back to `open <url>` and note as needing user verification in the final summary.
-   - **Multi-step URLs:** `open <url>` and note as needing user verification in the final summary; do not block the queue waiting for the user.
-   - **Mailto URLs:** draft the email, run `open "mailto:…"` so it opens pre-filled in their mail client, note as needing user send-confirmation in the final summary.
-3. Announce the result inline as you go — short, plain English (e.g. *"✓ Substack/marketing_promos — unsubscribed via token URL (200 OK, success markers found)"*).
-4. Append the action to `enuff-is-enuff-report/action-log.md` with timestamp, item id, URL, method used (`fetch`/`open`/`mailto`), response details, and conclusion (`completed` / `started in browser — user to verify` / `mailto opened — user to send` / `failed`).
 
-5. **End-of-act summary (mandatory).** After every approved item is processed, post a recap to the user: counts (total / completed / needs-verify / mailto-pending / failed), a per-item table with ✓ / ⚠ / ✗ icons, any items needing user follow-up, a pointer to `enuff-is-enuff-report/action-log.md`, and a "what happens next" line.
+1. **Navigate first.** Open the URL via the browser-control MCP.
+2. **Read the actual page.** Use `read_page` / `get_page_text` / `javascript_tool` to see what controls exist (toggles, buttons, settings panel, login wall, confirmation banner).
+3. **Describe the action in one line, before doing it.** Example: *"This is the Substack settings page; the 'Marketing emails' toggle is currently aria-checked=true; I'll click it to flip it off."*
+4. **Execute exactly that action** via the `find` ref + `computer left_click`. Synthetic JS click events are silently dropped by some React libs (e.g., Substack's switch component) — must use the real Chrome event path.
+5. **Verify via DOM state** (`aria-checked`, page text, URL change). Body-keyword matching against rendered HTML is forbidden — providers' SPA shells contain success/failure strings as JS bundles regardless of state.
+6. **Take a screenshot** for the action log.
+7. **Announce the result inline** as you go — short, plain English (e.g. *"✓ Substack / marketing_promos — Marketing emails toggle off, verified aria-checked=false"*).
+8. **Append to `enuff-is-enuff-report/action-log.md`** with timestamp, item id, URL, page-type observed, method, DOM state before/after, screenshot ref, and conclusion (`completed` / `needs your verification` / `mailto opened — user to send` / `failed: <reason>`).
 
-Never enter credentials, delete/archive messages, create filters, or actively send mail on the user's behalf — the global "yes" authorizes opening unsubscribe URLs and drafting mailto messages, not destructive or credentialed operations.
+The **Provider Playbook** in `skills/safe-action/SKILL.md` is a *reference for what to look for* on each provider's pages — never an autopilot. If the page state is ambiguous (login wall, unexpected popup, multiple plausible controls), do not click — screenshot, mark `needs your verification`, move on.
+
+7. **End-of-act summary (mandatory).** After every approved item is processed, post a recap: counts (total / completed / needs-verify / mailto-pending / failed), a per-item table with ✓ / ⚠ / ✗ icons, any items needing user follow-up, a pointer to `enuff-is-enuff-report/action-log.md`, and a "what happens next" line.
+
+Never enter credentials, delete/archive messages, create filters, or actively send mail on the user's behalf — the global "yes" authorizes navigating to unsubscribe URLs, clicking unsubscribe-specific UI controls, and drafting mailto messages, not destructive or credentialed operations.
 
 ## Path conventions in directory mode
 

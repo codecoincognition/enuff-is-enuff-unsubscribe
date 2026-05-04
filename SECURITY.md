@@ -20,11 +20,16 @@ import { fileURLToPath } from 'node:url';
 
 There is no `fetch`, no `https`, no `http.request`, no `axios`, no DNS resolution, no telemetry. The repo has zero npm dependencies (`package.json` does not exist).
 
-**Act phase: outbound GETs to unsubscribe URLs only — and only after your approval.** When you confirm the act phase, Claude calls `fetch(url, { method: 'GET' })` against the specific unsubscribe URLs you flagged in your `approved-actions.json`. These requests:
+**Act phase: outbound traffic only to the unsubscribe URLs you approved.** When you confirm the act phase, Claude drives a browser-control MCP (Claude-for-Chrome, gstack `/browse`, or compatible) to navigate to each approved unsubscribe URL, click the provider-specific UI control, and verify completion by reading DOM state. These requests:
 
 - go only to the providers you authorized (Substack, Mailchimp, etc., per your selection)
-- are GET-only (no PUT/POST/DELETE — the plugin contract explicitly forbids destructive verbs)
-- are individually logged to `enuff-is-enuff-report/action-log.md` with timestamps, response status, and outcome
+- are normal GET / interaction traffic — same as you'd send by clicking the link in a regular browser
+- the plugin contract explicitly forbids destructive verbs (account deletion, filter creation, sending mail)
+- are individually logged to `enuff-is-enuff-report/action-log.md` with timestamps, recipe used, DOM state before/after, and screenshot reference
+
+**Without a browser-control MCP**, the act phase falls back to `open <url>` and tells you exactly what to click. No outbound HTTP from the plugin itself in degraded mode — the browser handles it.
+
+**Deprecated approach**: an earlier version of this plugin used `fetch()` + body-keyword matching to "verify" completion. That approach was unreliable — provider SPA shells contain success/failure strings as JS bundles regardless of actual state, producing false positives. The current contract is DOM-state verification only; body-keyword matching is forbidden by the safe-action skill.
 
 If you want to verify before authorizing, the URLs are visible in `approved-actions.json` and in the rendered `report.html` summary panel.
 

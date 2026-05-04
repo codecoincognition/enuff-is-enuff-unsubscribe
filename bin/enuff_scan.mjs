@@ -331,11 +331,34 @@ function recommendedAction(stream, total, unreadRate, hasUnsub) {
   return ['keep', 'medium', 'Not enough evidence for automated cleanup.'];
 }
 
+// Per-provider URL classification. Determines what the act phase will need
+// to do — provider-specific recipes live in skills/safe-action/SKILL.md
+// (the Provider Playbook). The scanner labels are surface guidance; act-phase
+// behavior is driven by the Playbook at runtime.
 function unsubscribeStatus(value) {
   if (!value) return ['No unsubscribe path found', 'manual'];
   const lowered = value.toLowerCase();
   if (lowered.includes('mailto:')) return ['Mailto unsubscribe address found', 'draft_email'];
-  if (lowered.includes('http://') || lowered.includes('https://')) return ['Direct unsubscribe link found', 'open_link'];
+
+  // Substack `/action/disable_email?token=…` is a deep-link to email-preferences,
+  // NOT a one-click GET unsubscribe. The path pattern is the Substack signature
+  // regardless of domain (substack.com, custom domains like lennysnewsletter.com,
+  // and per-writer subdomains all use it).
+  if (/\/action\/disable_email\?token=/i.test(value)) {
+    return ['Substack settings page (multi-step)', 'multi_step_settings'];
+  }
+  // Mailchimp tracking domains usually require a confirmation click after the page loads.
+  if (/list-manage\.com\/unsubscribe|list-manage\d+\.com\/unsubscribe/i.test(value)) {
+    return ['Mailchimp unsubscribe page (confirm click)', 'multi_step_confirm'];
+  }
+  // ConvertKit / Kit pages also confirm-button gated.
+  if (/convertkit-mail\.com\/subscribers\/unsubscribe|kit\.com\/.*unsubscribe/i.test(value)) {
+    return ['ConvertKit unsubscribe page (confirm click)', 'multi_step_confirm'];
+  }
+
+  if (lowered.includes('http://') || lowered.includes('https://')) {
+    return ['Direct unsubscribe link found', 'open_link'];
+  }
   return ['Unsubscribe header found', 'review'];
 }
 

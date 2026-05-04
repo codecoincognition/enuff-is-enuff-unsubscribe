@@ -242,14 +242,15 @@ Have you reviewed the report? Are you okay with everything?
 
 Before anything happens, Claude shows you the queue — a one-line summary of every approved item — and asks the global gate. **One "yes" then authorizes the entire queue.** Per-item decisions already happened during review (step 4); asking again per URL would just be friction.
 
+**Tooling note:** the act phase works best with **Claude for Chrome** (Anthropic's Chrome extension + MCP) installed — it lets Claude drive your browser to actually click the right toggle and verify it really flipped. Without a browser-control MCP, the act phase falls back to opening pages and telling you what to click manually.
+
 For each approved item, Claude:
 
-1. Classifies the URL as **one-click / token** (Substack, Mailchimp, Beehiiv, ConvertKit, etc. — provider unsubscribes on GET) or **multi-step / account-scoped** (login or confirm-button required) or **mailto**.
-2. Takes the action and announces the result inline as it goes:
-   - One-click URLs: Claude calls `fetch(url, { method: 'GET' })` programmatically, checks the response for success markers, and reports verified completion.
-   - Multi-step URLs: Claude opens the page in your browser and notes the item as *needs your verification* in the final summary — the queue keeps moving.
-   - Mailto URLs: Claude drafts the email and opens it pre-filled in your mail client; you press send.
-3. Logs everything to `enuff-is-enuff-report/action-log.md`.
+1. Looks up the provider in the **Provider Playbook** (Substack, Mailchimp, Beehiiv, ConvertKit, Buttondown, SendGrid, mailto, or unknown — multi-step) and applies the matching recipe — page type, what to click, what DOM state proves completion.
+2. Drives Chrome via the browser-control MCP: navigate → find the right control → click via real Chrome events → verify `aria-checked` / page text / URL change.
+3. Captures a screenshot for the action log.
+4. Announces the result inline (e.g., *"✓ Substack/marketing_promos — Marketing emails toggle off, verified aria-checked=false"*).
+5. Logs everything to `enuff-is-enuff-report/action-log.md` with DOM state before/after and screenshot reference.
 
 After the queue is drained, Claude posts an **end-of-act summary**: counts (total / completed / needs-verify / mailto-pending / failed), a per-item table with ✓ / ⚠ / ✗ icons, any items still needing your attention, and a pointer to the full action log. The act phase always closes with this recap — you never have to guess what got done.
 

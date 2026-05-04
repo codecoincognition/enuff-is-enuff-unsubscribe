@@ -1,11 +1,11 @@
 ---
 name: safe-action
-description: Enforce approval gates and prevent unsafe unsubscribe or credential actions.
+description: Drive a browser-control MCP to actually click unsubscribe controls, verify via DOM state, and enforce the approval gate. Per-provider Playbook included.
 ---
 
 # Safe Action
 
-Use this skill before any action command executes.
+Use this skill before any act command executes.
 
 ## Hard Gate
 
@@ -25,25 +25,16 @@ Never automatically unsubscribe:
 - healthcare
 - insurance
 - government
-- tax/payroll
-- password/security alerts
+- tax / payroll
+- password / security alerts
 - active work accounts
 - receipts needed for warranty/taxes
 
-## Browser Actions
-
-When opening unsubscribe pages:
-
-1. Tell the user what site is opening, including the full URL.
-2. Note whether opening the URL is itself the final confirmation. Many newsletter platforms (Substack, Beehiiv, Mailchimp, Buttondown, ConvertKit) issue token-bearing one-click unsubscribe URLs that complete the unsubscribe on visit, with no confirmation page. Treat these as irreversible-on-click and ask before opening.
-3. Let the user log in themselves if needed.
-4. Stop before final confirmation on any provider that does have a confirmation page.
-5. Ask before every irreversible click — including the initial URL open when the URL itself is the confirmation.
-6. Log the result.
+These are locked at planning time; if any sneak through to the approved queue, refuse them in the act phase and warn the user.
 
 ## Approval model: review-time, not act-time
 
-Approval lives in the **review** phase, where the user curated the queue brand-by-brand and explicitly chose which items to flag. The **act** phase has a single global gate ("Have you reviewed the report? Are you okay with everything?") and then processes the entire queue without further per-item asks.
+Approval lives in the **review** phase, where the user curated the queue brand-by-brand and explicitly chose which items to flag. The act phase has a single global gate (above) and then processes the entire queue without further per-item asks.
 
 Why no per-item gate:
 
@@ -51,34 +42,130 @@ Why no per-item gate:
 - Asking again for every URL adds friction that punishes thorough reviewers and trains users to mash "yes" through the whole queue, defeating the protection.
 - Showing the queue once before processing (count + per-item summary line) gives the user a final visual pass; if anything looks wrong, they can say no and go re-edit `approved-actions.json`.
 
-What you must still do:
+## Required tooling: browser-control MCP
 
-1. **Show the queue** before starting. Format: count of approved items + a one-line per-item summary (company · stream · method).
-2. **Wait for the global yes.** No "yes" → no act phase.
-3. **Announce each completion in plain English** as you process — the user should be able to follow along (e.g. *"✓ Substack/marketing_promos — unsubscribed via token URL"*).
-4. **Log every action** to `action-log.md`.
-5. **Post the end-of-act summary** at the end (counts, per-item table with ✓ / ⚠ / ✗, items needing user follow-up).
+The act phase drives Chrome via a browser-control MCP and verifies completion by reading DOM state. Required tools (in priority order):
 
-Items that intrinsically require the user to do something in their browser (multi-step pages, mailto drafts) are processed by `open`-ing them — they don't ask the user mid-queue, they get noted as "needs user follow-up" in the final summary.
+1. **`mcp__claude-in-chrome__*`** — Anthropic's Claude-in-Chrome extension. Use:
+   - `tabs_context_mcp` to see existing tabs (call once at start)
+   - `tabs_create_mcp` to open a fresh MCP-controlled tab per session
+   - `navigate` to load each unsubscribe URL
+   - `find` to locate UI controls by natural-language query
+   - `computer` (`left_click` with `ref`, `screenshot` with `save_to_disk`)
+   - `javascript_tool` to read DOM state (`aria-checked`, page text, URL) before/after the click
+2. **Compatible alternatives** — any browser-control MCP that exposes navigate / click / read-DOM / screenshot. The recipes below are written to be MCP-agnostic.
+3. **Fallback (degraded mode)** — if no browser-control MCP is available, fall back to `open <url>`, tell the user explicitly what to click in plain English, and mark every item as `needs your verification` in the final summary. **Never claim verified completion in degraded mode.**
 
-## Take The Action — Don't Just Point At It
+If the user has no browser-control MCP, before starting the act phase ask once:
 
-The user approved an unsubscribe expecting it to happen. Opening a page and saying "verify in the browser" is incomplete work for one-click URLs.
+> *"This act phase works best with the Claude-in-Chrome extension. Without it I can only open pages — you'll click toggles yourself. Continue in degraded mode, or install the extension first?"*
 
-For **token / one-click URLs** (most `List-Unsubscribe` headers from Substack, Mailchimp, Beehiiv, ConvertKit, Buttondown, SendGrid, Iterable, etc.) the provider processes the unsubscribe on GET. Use Node `fetch(url, { method: 'GET', redirect: 'follow' })` to actually perform it programmatically. Check status (2xx) and look for body markers (`unsubscribed`, `disabled`, `removed`, `cancelled`, `you have been`, `no longer`, `success`). Report the verified outcome to the user.
+## Verification: DOM state, not response body
 
-For **multi-step or account-scoped URLs** that require user interaction (login, click "confirm"), use `open <url>` to launch the browser and then ask the user to confirm completion. Log their answer.
+After clicking, read the relevant DOM attribute (`aria-checked` on a `[role="switch"]`, page text, URL change, etc.) to confirm the action took. **Body-keyword matching against rendered HTML is forbidden** — providers' SPA shells contain success/failure strings as JS bundles regardless of state, which produces false positives. The earlier "fetch + grep for 'unsubscribed' in body" pattern is deprecated and must not be used.
 
-The contract is: every approved item ends in either a verified completion, an explicit user-confirmed completion, an explicit user refusal, or a logged failure with a clear reason. Never leave an item in "I opened the page, you go check."
+## Always treat every URL as multi-step until you've read the page
+
+URL shape is unreliable as a predictor of provider behavior. The Lenny's Newsletter incident proved this: a `disable_email?token=…` URL *looked* like a one-click token endpoint but was actually a deep-link to a settings page where you have to manually flip a toggle. The plugin claimed verified completion based on URL pattern + body keywords, and was wrong.
+
+The contract for every approved item:
+
+1. **Navigate first.** Open the URL via the browser-control MCP. Do not pre-classify based on the URL.
+2. **Read the actual page.** Use `read_page`, `get_page_text`, and/or `javascript_tool` to see the rendered DOM. Identify what's actually there: toggles? buttons? settings panel? login wall? confirmation banner?
+3. **Describe the action you're about to take, in one line, before doing it.** Example: *"This is the Substack settings page; the 'Marketing emails' toggle is currently `aria-checked=true`; I will click it to flip to `false`."*
+4. **Execute exactly that action.** Click via `find` ref + `computer left_click`. Take a screenshot.
+5. **Verify via DOM state.** Re-read the attribute. Body-keyword matching is forbidden.
+6. **If the page state is ambiguous, do not act.** Login walls, unexpected confirmation popups, multiple plausible buttons, anti-bot challenges, partial page load — all mean stop, screenshot, mark `needs your verification`, move on.
+
+The Provider Playbook below is **a reference for what to look for**, not an autopilot. It tells you "Substack settings pages typically have a list of toggles labeled with stream names" — not "click the third toggle without checking." Always read the page first, confirm what you're about to do, then click.
+
+The end-state contract: every approved item ends in either a verified completion (via DOM state), an explicit user-confirmed completion (degraded mode), an explicit user refusal, or a logged failure with a clear reason. Never leave an item in "I opened the page, you go check."
+
+---
+
+## Provider Playbook
+
+Recipes for the providers that show up most in `List-Unsubscribe` headers. Each recipe describes **what you'll typically see** on the rendered page for that provider, and **what to look for** before clicking — the recipes are not auto-execute scripts. Always navigate, read the actual page, confirm what you're about to do, then act. If a hostname has no recipe, treat as unknown — same flow, just no a-priori expectation of what the page will look like.
+
+### Substack (`*.substack.com`, hosted Substack publications)
+
+- **URL pattern**: `/action/disable_email?token=…`
+- **Page type**: settings deep-link (NOT one-click). The token authenticates you; the page lists per-stream toggles and you must flip the right ones.
+- **Action**: `find` the toggle whose row text starts with `Marketing emails` (for `marketing_promos` stream) or `<publication name>` (for `newsletter` stream), then `computer left_click` with the returned `ref`. Click only the streams the user approved — never bulk-flip.
+- **Verify**: re-read with `javascript_tool`: target toggle's `aria-checked` should change from `"true"` → `"false"`.
+- **Common pitfall**: synthetic JS click events are dropped by Substack's React switch. Must use real Chrome `left_click` via the `find` ref.
+
+### Mailchimp (`*.list-manage.com`, `*.list-manage1.com`, etc.)
+
+- **URL pattern**: `/unsubscribe?u=…&id=…&e=…&c=…`
+- **Page type**: confirmation page with a single "Unsubscribe" button. The GET shows the page; the actual unsubscribe fires when the button is clicked.
+- **Action**: `find` "Unsubscribe button", `left_click` it. Wait for the confirmation page.
+- **Verify**: post-click URL should redirect to a goodbye/confirmation page (typically `/unsubscribe-success` or contains the word "unsubscribed" in the URL path, NOT just the body).
+
+### Beehiiv (`*.beehiiv.com`)
+
+- **URL pattern**: `/unsubscribe?token=…` or `/p/unsubscribe-confirmed`
+- **Page type**: confirmation page with a "Yes, unsubscribe" button. RFC 8058 one-click variant exists too.
+- **Action**: navigate; if landing on a confirmation page, `find` "Yes, unsubscribe button" and `left_click`. If the page already shows "You have been unsubscribed" headline, no click needed.
+- **Verify**: page text contains "you have been unsubscribed" or URL contains `/unsubscribe-confirmed`. Use `get_page_text`, not raw HTML body — the rendered text is reliable; the bundle text is not.
+
+### ConvertKit (`*.convertkit-mail.com`, `*.kit.com`)
+
+- **URL pattern**: `/subscribers/unsubscribe?…`
+- **Page type**: confirmation page asking "Are you sure?" with an "Unsubscribe" button.
+- **Action**: `find` "Unsubscribe confirm button", `left_click`.
+- **Verify**: post-click URL contains `unsubscribed` or page heading reads "You've been unsubscribed".
+
+### Buttondown (`buttondown.email`, `*.buttondown.email`)
+
+- **URL pattern**: `/unsubscribe/<token>`
+- **Page type**: confirmation page with an "Unsubscribe" button.
+- **Action**: `find` "Unsubscribe button", `left_click`.
+- **Verify**: page heading changes to "You've been unsubscribed".
+
+### SendGrid (`*.sendgrid.net`, links with `?action=unsubscribe`)
+
+- **URL pattern**: varies; commonly `?action=unsubscribe&unsub=<token>`
+- **Page type**: depends on the sender's template. Often genuine one-click GET; sometimes a confirmation page.
+- **Action**: navigate. If a confirm button is present, `find` and `left_click`. If the page shows a success message immediately, no click needed.
+- **Verify**: page text contains "unsubscribed" / "removed from this list".
+
+### Mailto (any `List-Unsubscribe: mailto:…`)
+
+- **URL pattern**: `mailto:unsubscribe@…?subject=…`
+- **Page type**: not a webpage — needs the user's mail client.
+- **Action**: do **not** drive the browser. Instead, draft the email, run `open "mailto:…"` to open the user's mail client pre-filled, and mark `mailto opened — user to send` in the summary.
+- **Verify**: cannot verify; the user has to press send.
+
+### Unknown — multi-step (default for unrecognized hostnames)
+
+- **Page type**: assume settings deep-link or confirmation page; do not assume one-click.
+- **Action**: navigate, screenshot the page, then look for an obvious "unsubscribe" button. If one exists, `find` + `left_click`. If the page is clearly a settings UI, abort the auto-action and mark `needs your verification`.
+- **Verify**: post-click DOM state vs. pre-click. If indistinguishable, mark `needs your verification`.
+
+---
+
+## Logging contract
+
+Every action goes into `enuff-is-enuff-report/action-log.md` with:
+
+- ISO timestamp
+- Item id (`{domain}::{stream}`)
+- URL
+- Provider recipe used (or `unknown — multi-step`)
+- Method (`browser-click` / `browser-confirm-page` / `mailto` / `degraded-open`)
+- DOM state before and after (e.g., `aria-checked: true → false`, `URL: …/unsubscribe → …/unsubscribed`)
+- Screenshot reference (if captured)
+- Conclusion: `completed`, `needs your verification`, `mailto opened — user to send`, `failed: <reason>`
 
 ## End-of-Act Summary (mandatory)
 
-After all approved items have been processed, post a final summary to the user. The summary must include:
+After all approved items have been processed, post a final summary:
 
-- Counts: total processed / completed / started-in-browser / failed / refused.
-- A per-item table with company, stream, method (`fetch`/`open`/`mailto`), and conclusion. Use ✓ / ⚠ / ✗ icons so it scans quickly.
-- An explicit list of any items that still need the user's attention (e.g., multi-step browser flows where the user must confirm completion).
-- A pointer to `enuff-is-enuff-report/action-log.md` for the full structured log.
-- A "what happens next" line — typically that the approval queue is drained and the user can re-scan for fresh data.
+- Counts: total processed / completed / needs verification / mailto pending / failed.
+- Per-item table: company, stream, recipe used, conclusion. Use ✓ / ⚠ / ✗ icons.
+- Items still needing user attention.
+- Pointer to `enuff-is-enuff-report/action-log.md`.
+- "What happens next" line — typically that the approval queue is drained and the user can re-scan for fresh data.
 
 Without this summary the user has no concise view of what got done, even though every detail was logged. Always close the act phase with this recap.
