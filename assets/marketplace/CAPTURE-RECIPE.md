@@ -78,8 +78,10 @@ brew install gifski     # for high-quality GIF compression (optional but recomme
 cd /tmp
 mkdir demo-capture && cd demo-capture
 
-# 1. Record the session (will spawn a new shell; everything you type is captured)
-asciinema rec demo.cast --max-wait 1.5 --idle-time-limit 1.5
+# 1. Record the session (spawns a new shell; everything you type is captured).
+# --idle-time-limit caps long pauses to 2s in playback so the GIF stays under 45s.
+# (asciinema 3.x dropped --max-wait; only --idle-time-limit survives.)
+asciinema rec demo.cast --idle-time-limit 2
 
 # Inside the recording:
 claude
