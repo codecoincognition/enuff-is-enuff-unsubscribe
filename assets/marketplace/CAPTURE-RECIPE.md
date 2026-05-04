@@ -134,7 +134,7 @@ Once `workflow-review.png` and `demo.gif` are captured:
 | Hero card | `assets/marketplace/hero.png` | ✅ |
 | Full report screenshot | `assets/marketplace/report-full.png` | ✅ |
 | Getting-started hero | `assets/marketplace/getting-started-hero.png` | ✅ |
-| Workflow screenshot | `assets/marketplace/workflow-review.png` | ⬜ needs live session |
+| Workflow screenshot | `assets/marketplace/review-chat.png` | ✅ |
 | Demo GIF | `assets/marketplace/demo.gif` | ⬜ needs interactive recording |
 
 ## Re-rendering the headless screenshots
