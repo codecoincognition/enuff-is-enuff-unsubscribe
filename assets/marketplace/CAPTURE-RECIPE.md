@@ -15,22 +15,30 @@ Reproducible instructions for the visual assets needed when submitting `enuff-is
 
 ## To capture: workflow screenshot
 
-A real Claude Code session showing the brand-by-brand approval prompt. **Cannot be faked** — the marketplace expects an authentic screenshot of the actual product.
+A real Claude Code session showing the brand-by-brand approval prompt — **using plugin mode (slash commands)**, since that's the install path the marketplace listing is selling. **Cannot be faked** — the marketplace expects an authentic screenshot of the actual product.
 
-**Recipe:**
+**Setup (one-time, in any Claude Code session):**
 
-```bash
-# 1. Fresh state, scan the sample inbox
-cd /path/to/enuff-is-enuff-unsubscribe
-rm -rf enuff-is-enuff-report
-node bin/enuff_scan.mjs scan examples/sample-inbox
-
-# 2. Open Claude Code in this directory (CLAUDE.md auto-loads)
-claude
+```text
+/plugin marketplace add codecoincognition/enuff-is-enuff-unsubscribe
+/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+/reload-plugins
 ```
 
-Then in the Claude Code session, type:
-> walk me through the candidates
+**Recipe (in any directory — slash commands work from anywhere):**
+
+```bash
+cd /tmp                  # or anywhere; doesn't matter, plugin is global
+mkdir demo-capture && cd demo-capture
+claude                   # opens fresh session
+```
+
+Then in the Claude Code session, run the actual plugin commands:
+
+```text
+/enuff-is-enuff-unsubscribe:scan /path/to/enuff-is-enuff-unsubscribe/examples/sample-inbox
+/enuff-is-enuff-unsubscribe:review
+```
 
 Wait for Claude to render the brand-by-brand table (it will list Ollama, Substack/Lenny's, Acmestore, Snackbox, Linear, Railway, etc. with their stream counts and unsub-header status). When the table is fully visible:
 
@@ -39,7 +47,9 @@ Wait for Claude to render the brand-by-brand table (it will list Ollama, Substac
 
 Save as `assets/marketplace/workflow-review.png`.
 
-Best moment to capture: right after Claude posts the company table but before you respond — the prompt-table-prompt structure reads as "AI is helping me decide" which is the marketplace pitch.
+Best moment to capture: right after Claude posts the company table but before you respond — the slash-command-prompt-table structure reads as "I ran a slash command and AI is helping me decide" which is exactly the marketplace pitch.
+
+> **Why slash commands and not the node command?** The marketplace listing's pitch is "install this plugin and get slash commands." Showing `node bin/enuff_scan.mjs scan …` in the demo would be off-message — it's the directory-mode under-the-hood detail. Plugin users never see that command.
 
 ## To capture: demo GIF (≤45s, ≤8 MB)
 
@@ -54,23 +64,30 @@ brew install ffmpeg     # already installed
 brew install gifski     # for high-quality GIF compression (optional but recommended)
 ```
 
-**Recipe:**
+**Prerequisite:** plugin already installed (one-time setup):
+
+```text
+/plugin marketplace add codecoincognition/enuff-is-enuff-unsubscribe
+/plugin install enuff-is-enuff-unsubscribe@enuff-is-enuff-local
+/reload-plugins
+```
+
+**Recipe (record plugin-mode flow with slash commands):**
 
 ```bash
-cd /path/to/enuff-is-enuff-unsubscribe
-rm -rf enuff-is-enuff-report
+cd /tmp
+mkdir demo-capture && cd demo-capture
 
 # 1. Record the session (will spawn a new shell; everything you type is captured)
 asciinema rec demo.cast --max-wait 1.5 --idle-time-limit 1.5
 
 # Inside the recording:
-node bin/enuff_scan.mjs scan examples/sample-inbox
 claude
-# (in Claude) "walk me through the candidates"
-# (respond with) "all newsletters except GitHub"
-# (in Claude) "render the report"
-# (in Claude) "I'm ready to act"
-# (when prompted) "yes"
+# (in Claude) /enuff-is-enuff-unsubscribe:scan /path/to/enuff-is-enuff-unsubscribe/examples/sample-inbox
+# (in Claude) /enuff-is-enuff-unsubscribe:review
+# (respond with) all newsletters except GitHub
+# (in Claude) /enuff-is-enuff-unsubscribe:act
+# (when prompted) yes
 # (wait for end-of-act summary)
 # (Ctrl+D to exit Claude, then Ctrl+D to end recording)
 
