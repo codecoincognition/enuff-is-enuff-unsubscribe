@@ -283,13 +283,23 @@ skills/                       canonical workflow skills (used by both options)
 agents/                       agent personas (used by both options)
 bin/enuff_scan.mjs            scanner / report renderer / serve (Node stdlib only)
 examples/                     sample .eml files for trying it out
+  sample.eml, receipt.eml, security.eml          minimal 3-message smoke test
+  sample-inbox/                                  ~20 fake messages spanning all classifier categories
+LICENSE                       MIT
 getting-started.html          GitHub-renderable overview page
 ```
 
 Quick smoke test (works in either mode):
 
 ```bash
-node bin/enuff_scan.mjs scan examples   # produces enuff-is-enuff-report/
+# minimal — 3 messages, just confirms the pipeline runs
+node bin/enuff_scan.mjs scan examples
+
+# realistic — ~20 fake messages spanning newsletters, promos, receipts,
+# security alerts, SaaS drips, social notifications, and a high-risk
+# financial sender (great for trying the brand-by-brand review)
+node bin/enuff_scan.mjs scan examples/sample-inbox
+
 open enuff-is-enuff-report/report.html  # macOS
 # or: node bin/enuff_scan.mjs serve enuff-is-enuff-report
 ```
@@ -307,3 +317,7 @@ Because the pain is immediate:
 The plugin promise is equally immediate:
 
 > Claude will show you who is responsible and help make them stop.
+
+## License
+
+MIT — see [LICENSE](./LICENSE). Copyright 2026 Code Coin Cognition LLC.

@@ -7,6 +7,7 @@
   },
   "homepage": "https://github.com/codecoincognition/enuff-is-enuff-unsubscribe",
   "repository": "https://github.com/codecoincognition/enuff-is-enuff-unsubscribe",
+  "license": "MIT",
   "keywords": [
     "email",
     "unsubscribe",

@@ -1,0 +1,9 @@
+From: Ollama Blog <blog@ollama.example>
+To: vikas@example.com
+Subject: On the Ollama blog: serving Llama on a Raspberry Pi
+Date: Mon, 28 Apr 2026 14:00:00 -0400
+List-Unsubscribe: <https://ollama.example/u/12ab34cd>
+List-ID: <blog.ollama.example>
+X-Gmail-Labels: Unread
+
+Step-by-step: setting up local inference on edge hardware.
