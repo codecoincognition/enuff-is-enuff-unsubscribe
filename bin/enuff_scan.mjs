@@ -368,6 +368,56 @@ function round3(value) {
   return Math.round(value * 1000) / 1000;
 }
 
+// Extract the hostname from a List-Unsubscribe value, normalizing common
+// www/email/click prefixes. Returns null if no http(s) URL is present.
+function extractUnsubHostname(value) {
+  if (!value) return null;
+  const match = value.match(/https?:\/\/([^\/\s>"']+)/i);
+  if (!match) return null;
+  let host = match[1].toLowerCase();
+  if (host.startsWith('www.')) host = host.slice(4);
+  return host;
+}
+
+// Tracking-only subdomains used by ESPs that do NOT identify a publication.
+// When the unsub host matches one of these, fall back to sender domain for
+// brand bucketing instead — otherwise every Mailchimp newsletter would
+// collapse into "list-manage.com" the way Substack publications used to
+// collapse into "substack.com".
+const TRACKING_SUBDOMAIN_PREFIXES = [
+  'list-manage', 'cmail', 'klclick', 'rs6', 'sparkpostmail',
+  'mandrillapp', 'sendgrid', 'click', 'links', 'link',
+  'em', 'mail', 'email', 'send',
+];
+
+function isTrackingHost(host) {
+  if (!host) return true;
+  const first = host.split('.')[0];
+  return TRACKING_SUBDOMAIN_PREFIXES.some((p) => first === p || first.startsWith(p + '-') || first.startsWith(p + '.'));
+}
+
+// Determine the brand identity for a message. The brand identity is the
+// (key, name, domain, brand_host) tuple used to group messages into one
+// row in the report. Falls through priority:
+//   1. unsub URL hostname (when not a tracking subdomain) — best for
+//      newsletter-platform publications (Substack, Beehiiv, ConvertKit)
+//      where the From: domain is the platform but the unsub URL points
+//      at the publication's own custom domain.
+//   2. From sender domain — for everything else.
+function brandIdentity(meta) {
+  const senderDomain = meta.domain;
+  const unsubHost = extractUnsubHostname(meta.list_unsubscribe);
+  const useUnsubHost = unsubHost && !isTrackingHost(unsubHost);
+  const dn = (meta.sender_name || '').trim();
+  const hasGoodDisplayName = dn && dn !== 'Unknown' && dn.length > 1 && !/^[\w.+-]+@/.test(dn);
+
+  const key = useUnsubHost ? unsubHost : senderDomain;
+  const displayDomain = useUnsubHost ? unsubHost : senderDomain;
+  const name = hasGoodDisplayName ? dn : companyFromDomain(displayDomain);
+
+  return { key, name, domain: displayDomain, sender_domain: senderDomain, brand_host: useUnsubHost ? unsubHost : null };
+}
+
 // Extract top-N entries from a counter Map by descending count.
 function topKeys(counter, n) {
   return [...counter.entries()]
@@ -380,12 +430,18 @@ async function buildSummary(messageIter, top) {
   const companies = new Map();
   const now = new Date();
   for await (const meta of messageIter) {
-    const key = meta.domain;
+    const { key, name, domain, sender_domain, brand_host } = brandIdentity(meta);
     let company = companies.get(key);
     if (!company) {
       company = {
-        company: companyFromDomain(meta.domain),
-        domain: meta.domain,
+        company: name,
+        domain,
+        sender_domain,
+        brand_host,
+        // Track sender display names seen so we can later pick the most common
+        // as the canonical brand name (in case different bucket members carry
+        // different display strings — e.g. "Lenny Rachitsky" vs "Lenny's Podcast").
+        _name_counts: new Map(),
         total: 0,
         read: 0,
         unread: 0,
@@ -396,6 +452,7 @@ async function buildSummary(messageIter, top) {
       };
       companies.set(key, company);
     }
+    if (name) company._name_counts.set(name, (company._name_counts.get(name) ?? 0) + 1);
     company.total += 1;
     if (meta.unread) company.unread += 1;
     else company.read += 1;
@@ -468,9 +525,17 @@ async function buildSummary(messageIter, top) {
         reason,
       });
     }
+    // Pick the most-common display name in the bucket as canonical brand name
+    let canonicalName = company.company;
+    if (company._name_counts && company._name_counts.size) {
+      const ranked = [...company._name_counts.entries()].sort((a, b) => b[1] - a[1]);
+      canonicalName = ranked[0][0];
+    }
     rows.push({
-      company: company.company,
+      company: canonicalName,
       domain: company.domain,
+      sender_domain: company.sender_domain,
+      brand_host: company.brand_host,
       total: company.total,
       read: company.read,
       unread: company.unread,
