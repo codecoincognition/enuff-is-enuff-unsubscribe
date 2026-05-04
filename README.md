@@ -174,6 +174,8 @@ Local-first by design — there is no server.
 
 The "act" phase opens unsubscribe URLs in your browser and drafts mailto messages — nothing else.
 
+For the full audit-grade summary (network surface, credentials policy, data flow, file footprint, and source pointers), see [SECURITY.md](./SECURITY.md). For what's planned and what will never ship, see [ROADMAP.md](./ROADMAP.md).
+
 ## What's in this repo
 
 ```text
