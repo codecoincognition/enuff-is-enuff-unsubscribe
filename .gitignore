@@ -27,3 +27,10 @@ __pycache__/
 # Env / secrets
 .env
 .env.*
+
+# Internal-only docs — kept locally, not published to the public repo.
+# (Restore via `git show <prior-commit>:<filename>` if needed.)
+MARKETING.md
+PLUGIN-SPEC.md
+DEVELOPMENT-PLAN.md
+.impeccable.md

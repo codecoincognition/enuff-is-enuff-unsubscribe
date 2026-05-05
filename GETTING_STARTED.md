@@ -198,18 +198,7 @@ Approval happens in Claude — not in the HTML. The flow is:
 2. You tell Claude which streams to flag (e.g. `Substack:newsletter, Ollama:newsletter`).
 3. Claude writes your selections into `enuff-is-enuff-report/approved-actions.json`.
 4. Claude re-renders `report.html` so you can see your approved actions highlighted in green.
-5. Open the report to confirm visually:
-
-   ```bash
-   open enuff-is-enuff-report/report.html
-   ```
-
-   Or serve it over HTTP if you prefer (some browsers handle assets better that way):
-
-   ```bash
-   node bin/enuff_scan.mjs serve enuff-is-enuff-report
-   # then open http://127.0.0.1:8765/report.html
-   ```
+5. Open the report to confirm visually. Just tell Claude *"open the report"* (Claude knows where it is) or double-click `enuff-is-enuff-report/report.html` in Finder.
 
 The HTML is read-only — there are no checkboxes inside. Use the report to verify what you approved, then come back to Claude to act.
 

@@ -45,7 +45,7 @@ Wait for Claude to render the brand-by-brand table (it will list Ollama, Substac
 - **macOS**: `Shift + Cmd + 5` → "Capture Selected Window" → click the Terminal/iTerm window. Saves to Desktop.
 - Recommended terminal: a clean iTerm or Terminal window, dark or light theme matching your taste, ~1280×800.
 
-Save as `assets/marketplace/workflow-review.png`.
+Save as `assets/marketplace/review-chat.png` (current shipped name).
 
 Best moment to capture: right after Claude posts the company table but before you respond — the slash-command-prompt-table structure reads as "I ran a slash command and AI is helping me decide" which is exactly the marketplace pitch.
 
@@ -125,7 +125,7 @@ Save as `assets/marketplace/demo.gif`.
 
 ## Marketplace submission packing list
 
-Once `workflow-review.png` and `demo.gif` are captured:
+Once `review-chat.png` (already shipped) and `demo.gif` are captured:
 
 | Asset | Path | Status |
 |---|---|---|

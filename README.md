@@ -95,14 +95,12 @@ Once installed, the act phase navigates each approved unsubscribe URL, identifie
 
 **Without any browser-control MCP**, the plugin still runs — it falls back to `open <url>` for each approved item and tells you exactly what to click. It's slower, no verification, but safe and universal.
 
-### Quick smoke test (either mode)
+### Try it without your real inbox
 
-```bash
-node bin/enuff_scan.mjs scan examples/sample-inbox
-open enuff-is-enuff-report/report.html
-```
+The repo ships with a sample inbox at `examples/sample-inbox/` — 209 fake `.eml` files across 55 brands spanning every classifier category. Perfect for trying the brand-by-brand review before pointing it at your actual mail.
 
-The sample inbox is 20 fake `.eml` files spanning every classifier category — perfect for trying the brand-by-brand review without using your real mail.
+| Plugin mode | `/enuff-is-enuff-unsubscribe:scan examples/sample-inbox` |
+| Directory mode | Just tell Claude: *"scan examples/sample-inbox"* |
 
 ## How it works
 
@@ -113,7 +111,7 @@ The workflow is the same in plugin mode and directory mode. Only the entry point
 You give the path to an exported mailbox (Gmail Takeout `.mbox`, Apple Mail `.mbox` package's inner `mbox` file, Thunderbird `.mbox`, or a folder of `.eml` files).
 
 | Plugin mode | Run the slash command: `/enuff-is-enuff-unsubscribe:scan ~/Downloads/INBOX.mbox/mbox` |
-| Directory mode | Just tell Claude: *"Scan this mailbox: ~/Downloads/INBOX.mbox/mbox"* — `CLAUDE.md` tells Claude to run `node bin/enuff_scan.mjs scan …` for you |
+| Directory mode | Just tell Claude: *"Scan this mailbox: ~/Downloads/INBOX.mbox/mbox"* |
 
 The scanner reads only message headers (no body, no attachments) and writes:
 
@@ -205,8 +203,8 @@ skills/                       canonical workflow skills (used by both options)
 agents/                       agent personas (used by both options)
 bin/enuff_scan.mjs            scanner / report renderer / serve (Node stdlib only)
 examples/
-  sample.eml + receipt.eml + security.eml   minimal 3-message smoke test
-  sample-inbox/                             ~20 fake messages spanning all classifier categories
+  sample.eml + receipt.eml + security.eml   minimal 3-message starter
+  sample-inbox/                             209 fake messages across 55 brands
 assets/                       logos + marketplace screenshots + capture recipe
 LICENSE                       MIT
 getting-started.html          GitHub-renderable overview page

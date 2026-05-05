@@ -2,7 +2,7 @@
 
 `enuff-is-enuff-unsubscribe` is local-first by architecture, not as a phase. There are no plans to add OAuth flows, hosted SaaS components, telemetry, or any feature that requires sending your mail or your account credentials to a remote service. If those constraints don't suit your use case, this is not the tool — and that's fine.
 
-## v0.1 (shipped — current)
+## v0.1 (shipped)
 
 - `.mbox` (Gmail Takeout, Apple Mail, Thunderbird) and `.eml` folder input
 - Brand-by-brand conversational review in Claude
@@ -11,9 +11,9 @@
 - One global "yes" at act time; per-URL execution via `fetch()` (one-click) / `open` (multi-step) / `open mailto:` (drafts)
 - Hard locks on account/security, orders/receipts, and financial/payroll/healthcare/government senders
 - Two install paths: Claude Code plugin marketplace + directory mode via `CLAUDE.md`
-- 20 fake `.eml` fixtures in `examples/sample-inbox/` for end-to-end testing
+- `examples/sample-inbox/` ships with sample fixtures for end-to-end testing (initial set; expanded to 209 fixtures across 55 brands in v0.2)
 
-## v0.2 (shipped)
+## v0.2 (shipped — current)
 
 - **Browser-control act phase.** The act phase now drives Chrome via a browser-control MCP (Claude-for-Chrome, gstack `/browse`, or compatible) to actually click the right unsubscribe controls and verify completion by reading DOM state.
 - **Provider Playbook.** Per-provider recipes for Substack, Mailchimp, Beehiiv, ConvertKit, Buttondown, SendGrid, and mailto unsubscribes — each describes URL pattern, page type, what to click, and what DOM state proves completion.
